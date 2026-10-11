@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embryo Scan · Compare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/app/app.css">
+  <link rel="stylesheet" href="/src/app/compare.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="tags" class="tags"></div>
+
+  <header class="topbar">
+    <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
+    <nav class="tabs">
+      <a href="/"><i class="ti ti-timeline-event"></i>Develop</a>
+      <a href="/analyze.html"><i class="ti ti-scan"></i>Analyze</a>
+      <a class="active"><i class="ti ti-arrows-sort"></i>Compare</a>
+    </nav>
+    <div class="clock mono"><span>Day 3</span><b>Rank</b></div>
+  </header>
+
+  <section class="intro">
+    <div class="day mono" id="c-patient">Patient</div>
+    <h1>Which embryo to transfer?</h1>
+    <p>The AI watched each embryo's first three days, timed every division, and estimated its chance of becoming a blastocyst by day 5. Taller plinth, better chance.</p>
+    <button id="btn-reveal" class="primary"><i class="ti ti-eye"></i><span>Show what happened by day 5</span></button>
+    <p class="fine" id="c-note"></p>
+  </section>
+
+  <div class="credit mono">Held-out patient · frames: Gomez et al. 2022 (CC BY-NC-SA 4.0)</div>
+  <script type="module" src="/src/app/compare.js"></script>
+</body>
+</html>

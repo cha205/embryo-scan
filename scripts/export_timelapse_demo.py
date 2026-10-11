@@ -86,7 +86,33 @@ def main():
             "direct_cleavage_ai": direct_cleavage(m_ai), "grade": {"icm": gr.ICM, "te": gr.TE},
         })
         print(f"{vid}: {len(kept_hours)} frames, category AI {videos[-1]['category_ai']} / expert {videos[-1]['category_expert']}")
-    (OUT / "timelapse.json").write_text(json.dumps({"videos": videos}, indent=1))
+    # Compare view: every test video of one held-out patient with several
+    # embryos recorded past day 5, ranked by the viability model's score.
+    vi = pd.read_csv(paths.RUNS / "timelapse" / a.run / "viability_test_ai.csv")
+    per_patient = vi.groupby("patient").video.count()
+    patient = per_patient[per_patient >= 3].sort_index().index
+    compare = None
+    if len(patient):
+        pid = patient[0]
+        rows = vi[vi.patient == pid].sort_values("score", ascending=False)
+        embryos = []
+        for _, r in rows.iterrows():
+            g = test[test.video == r.video]
+            x0, y0 = int(g.crop_x.iloc[0]), int(g.crop_y.iloc[0])
+            thumbs = {}
+            for label, hours in (("day3", 72.0), ("day5", 116.0)):
+                k = int(np.argmin(np.abs(g.hours.to_numpy() - hours)))
+                p = frame_path(r.video, int(g.frame.iloc[k]))
+                if p is not None:
+                    Image.open(p).convert("L").crop((x0, y0, x0 + FRAME_PX, y0 + FRAME_PX)).resize((160, 160)).save(
+                        OUT / f"cmp_{r.video}_{label}.jpg", quality=85)
+                    thumbs[label] = f"/demo/cmp_{r.video}_{label}.jpg"
+            embryos.append({"id": r.video, "score": round(float(r.score), 3), "category": r.category,
+                            "events_ai": {k: (None if pd.isna(r[k]) else round(float(r[k]), 2)) for k in ("t2", "t3", "t4", "t5", "t8")},
+                            "blastocyst": int(r.blastocyst), "thumbs": thumbs})
+        compare = {"patient": pid, "embryos": embryos}
+        print(f"compare: patient {pid}, {len(embryos)} embryos")
+    (OUT / "timelapse.json").write_text(json.dumps({"videos": videos, "compare": compare}, indent=1))
 
 
 if __name__ == "__main__":

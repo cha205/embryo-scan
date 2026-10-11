@@ -18,6 +18,7 @@ Usage: python scripts/viability.py [--run r34]
 
 import argparse
 import json
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -105,7 +106,10 @@ def main():
     by_cat.columns = ["Meseguer category", "videos", "blastocyst by day 5"]
 
     out = paths.RUNS / "timelapse" / a.run
+    ai["score"] = lr.predict_proba(ai[FEATURES].to_numpy(float))[:, 1]
     ai.to_csv(out / "viability_test_ai.csv", index=False)
+    with open(out / "viability_lr.pkl", "wb") as f:
+        pickle.dump({"model": lr, "features": FEATURES}, f)
     (out / "viability.json").write_text(json.dumps(res, indent=2))
     text = ["# Viability ranking from day 0-3 division timings\n",
             f"Outcome: blastocyst formed by day 5 ({DAY5:.0f} h). Videos recorded at least that long: "
