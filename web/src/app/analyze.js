@@ -6,7 +6,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 
 const W = 2.4
 const H = 1.8
-const samples = await fetch('/samples/samples.json').then((r) => r.json())
+const samples = await fetch('/blastocyst/samples.json').then((r) => r.json())
 
 const EXPLAIN = {
   exp: ['Early blastocyst: the cavity is less than half the embryo.', 'Blastocyst: the cavity is half the embryo or more.',
@@ -137,7 +137,7 @@ const state = { i: -1, head: 'icm', rise: 0, riseTarget: 0, mix: null, pending: 
 const heatCache = {}
 const heat = (url) => {
   if (!heatCache[url]) {
-    const t = loader.load(`/${url}`)
+    const t = loader.load(url)
     t.colorSpace = THREE.NoColorSpace
     heatCache[url] = t
   }
@@ -146,7 +146,7 @@ const heat = (url) => {
 
 samples.forEach((s, i) => {
   const li = document.createElement('li')
-  li.innerHTML = `<img src="/${s.image}" alt="Embryo ${s.id}"><div><b>Embryo ${String.fromCharCode(65 + i)}</b><span>panel ${s.expert} · AI ${s.model}</span></div>`
+  li.innerHTML = `<img src="${s.photo}" alt="Embryo ${s.id}"><div><b>Embryo ${String.fromCharCode(65 + i)}</b><span>panel ${s.expert} · AI ${s.model}</span></div>`
   li.addEventListener('click', () => select(i))
   $('#samples').append(li)
 })
@@ -179,11 +179,11 @@ function select(i) {
 function apply(i) {
   state.i = i
   const s = samples[i]
-  const tex = loader.load(`/${s.image}`)
+  const tex = loader.load(s.photo)
   tex.colorSpace = THREE.SRGBColorSpace
   photo.material.map = tex
   photo.material.needsUpdate = true
-  terrainMat.uniforms.uHeat.value = heat(s.cams[state.head])
+  terrainMat.uniforms.uHeat.value = heat(s.heatmaps[state.head])
   terrainMat.uniforms.uNext.value = terrainMat.uniforms.uHeat.value
   terrainMat.uniforms.uMix.value = 0
   showResult(s)
@@ -194,7 +194,7 @@ document.querySelectorAll('#r-seg button').forEach((b) => b.addEventListener('cl
   if (b.dataset.head === state.head || state.i < 0) return
   document.querySelectorAll('#r-seg button').forEach((x) => x.classList.toggle('on', x === b))
   state.head = b.dataset.head
-  terrainMat.uniforms.uNext.value = heat(samples[state.i].cams[state.head])
+  terrainMat.uniforms.uNext.value = heat(samples[state.i].heatmaps[state.head])
   state.mix = 0
 }))
 

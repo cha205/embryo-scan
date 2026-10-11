@@ -7,7 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/app/app.css">
+  <link rel="stylesheet" href="/src/app/base.css">
+  <link rel="stylesheet" href="/src/app/develop.css">
 </head>
 <body>
   <canvas id="scene"></canvas>
@@ -48,7 +49,7 @@
       <span class="badge mono" id="rv-id">demo timings</span>
     </div>
     <div class="frame" id="rv-frame">
-      <img id="rv-img" alt="Microscope frame from the real time-lapse video">
+      <video id="rv-video" muted playsinline preload="auto" aria-label="Real time-lapse video of the embryo"></video>
       <div class="frame-empty" id="rv-empty"><i class="ti ti-video"></i><span>Real video appears here once the division model is trained</span></div>
       <span class="frame-time mono" id="rv-time">0.0 h</span>
     </div>
@@ -69,6 +70,6 @@
   </footer>
   <div class="credit mono">3D twin replays the detected divisions · illustrative model</div>
 
-  <script type="module" src="/src/app/main.js"></script>
+  <script type="module" src="/src/app/develop.js"></script>
 </body>
 </html>

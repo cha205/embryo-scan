@@ -1,0 +1,92 @@
+[
+  {
+    "id": "0057_01",
+    "photo": "/blastocyst/samples/0057_01/photo.jpg",
+    "heatmaps": {
+      "exp": "/blastocyst/samples/0057_01/heatmap-exp.png",
+      "icm": "/blastocyst/samples/0057_01/heatmap-icm.png",
+      "te": "/blastocyst/samples/0057_01/heatmap-te.png"
+    },
+    "expert": "4AA",
+    "model": "4AA",
+    "probs": {
+      "exp": [
+        0.008,
+        0.005,
+        0.051,
+        0.92,
+        0.016
+      ],
+      "icm": [
+        0.858,
+        0.02,
+        0.122
+      ],
+      "te": [
+        0.89,
+        0.051,
+        0.059
+      ]
+    }
+  },
+  {
+    "id": "0155_02",
+    "photo": "/blastocyst/samples/0155_02/photo.jpg",
+    "heatmaps": {
+      "exp": "/blastocyst/samples/0155_02/heatmap-exp.png",
+      "icm": "/blastocyst/samples/0155_02/heatmap-icm.png",
+      "te": "/blastocyst/samples/0155_02/heatmap-te.png"
+    },
+    "expert": "4BB",
+    "model": "4AB",
+    "probs": {
+      "exp": [
+        0.001,
+        0.001,
+        0.001,
+        0.994,
+        0.003
+      ],
+      "icm": [
+        0.557,
+        0.264,
+        0.18
+      ],
+      "te": [
+        0.002,
+        0.763,
+        0.234
+      ]
+    }
+  },
+  {
+    "id": "837_02",
+    "photo": "/blastocyst/samples/837_02/photo.jpg",
+    "heatmaps": {
+      "exp": "/blastocyst/samples/837_02/heatmap-exp.png",
+      "icm": "/blastocyst/samples/837_02/heatmap-icm.png",
+      "te": "/blastocyst/samples/837_02/heatmap-te.png"
+    },
+    "expert": "3BC",
+    "model": "3BB",
+    "probs": {
+      "exp": [
+        0.002,
+        0.069,
+        0.912,
+        0.016,
+        0.002
+      ],
+      "icm": [
+        0.273,
+        0.615,
+        0.112
+      ],
+      "te": [
+        0.233,
+        0.525,
+        0.242
+      ]
+    }
+  }
+]

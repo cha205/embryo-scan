@@ -4,15 +4,15 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
-import { createBlastocyst } from '../embryo.js'
+import { createBlastocyst } from '../shared/embryo.js'
 import { buildTwin } from './twin.js'
 
-const data = await fetch('/demo/timelapse.json').then((r) => (r.ok ? r.json() : null)).catch(() => null)
+const data = await fetch('/timelapse/demo.json').then((r) => (r.ok ? r.json() : null)).catch(() => null)
 const cmp = data?.compare
 const $ = (s) => document.querySelector(s)
 if (!cmp) {
   $('#c-patient').textContent = 'No comparison data yet'
-  $('#c-note').textContent = 'Run scripts/export_timelapse_demo.py after training the division model.'
+  $('#c-note').textContent = 'Run scripts/timelapse/export_demo.py after training the stage model.'
   throw new Error('no compare data')
 }
 const embryos = cmp.embryos

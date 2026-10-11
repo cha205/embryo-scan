@@ -7,7 +7,7 @@
 // is then an interpolation between two snapshots, which keeps scrubbing the
 // timeline backwards and forwards smooth and deterministic.
 import * as THREE from 'three'
-import { rng } from '../embryo.js'
+import { rng } from '../shared/embryo.js'
 
 // Median onset (hours after fertilization) of each phase across the 704 videos
 export const TYPICAL = { tPNa: 7.1, tPNf: 24.6, t2: 27.0, t3: 38.0, t4: 39.3, t5: 50.1, t6: 53.0, t7: 55.0, t8: 56.8, 't9+': 71.6, tM: 93.8, tSB: 101.7, tB: 110.3, tEB: 113.3 }

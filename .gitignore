@@ -4,14 +4,20 @@ __pycache__/
 .venv/
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
 .ipynb_checkpoints/
 
-# Data and model weights (download with scripts/download_data.py)
+# Data and model outputs (rebuild with the scripts; see README)
 data/
 runs/
 *.pt
 *.ckpt
 *.onnx
+
+# MATLAB autosaves and compiled files
+*.asv
+*.mex*
+matlab/output/
 
 # Caches (uv, Hugging Face)
 .cache/
@@ -20,7 +26,9 @@ runs/
 web/node_modules/
 web/dist/
 
-# Local tool config
+# Quick experiments: anything goes in scratch/, nothing in it is committed
+scratch/
+
 
 # OS / editor
 .DS_Store

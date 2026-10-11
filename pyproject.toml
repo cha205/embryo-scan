@@ -12,4 +12,16 @@ build-backend = "setuptools.build_meta"
 include = ["embryoscan*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/python"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["data", "runs", "web", "scratch"]
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, import order, bugbear, pyupgrade, numpy-specific rules
+select = ["E", "W", "F", "I", "B", "UP", "NPY"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["embryoscan", "server"]
