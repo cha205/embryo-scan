@@ -30,6 +30,7 @@ Our evaluation code reproduces the paper's published XCeption numbers exactly (0
 | All clinical data | 0.47 (0.42-0.52) |
 | AI grade (from the photo) | 0.56 (0.51-0.61) |
 | AI grade + embryologist's grade + age | 0.56 (0.51-0.61) |
+| Whole network fine-tuned on live birth | 0.54 (0.50-0.59) |
 
 Honest finding so far: in this clinic's data, live birth is barely predictable from age, the embryologist's grade, or the photo. The AI's grade does as well as the embryologist's, but no model clearly beats age alone (paired differences all include zero). Details: [reports/outcome_lb.md](reports/outcome_lb.md).
 
