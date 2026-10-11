@@ -20,7 +20,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping
 const scene = new THREE.Scene()
 scene.background = new THREE.Color('#0b0c0f')
 const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100)
-const HOME = { pos: new THREE.Vector3(0, 4.9, 8.2), target: new THREE.Vector3(0, 0.3, 0.1) }
+const HOME = { pos: new THREE.Vector3(0, 6.2, 9.6), target: new THREE.Vector3(0, 0.2, 0.2) }
 camera.position.copy(HOME.pos)
 const controls = new OrbitControls(camera, canvas)
 controls.target.copy(HOME.target)
@@ -86,14 +86,14 @@ function terrainMaterial(heat) {
       ${INFERNO}
       void main() {
         float h = vHeat;
-        vec3 col = inferno(0.18 + h * 0.8);
+        vec3 col = inferno(0.22 + h * 0.72) * 0.8;
         float f = fract(h * 9.0);
-        float line = 1.0 - smoothstep(0.0, fwidth(h * 9.0) * 1.6, min(f, 1.0 - f));
+        float line = 1.0 - smoothstep(0.0, fwidth(h * 9.0) * 1.4, min(f, 1.0 - f));
         vec2 g = abs(fract(vUv * vec2(64.0, 48.0) - 0.5) - 0.5) / fwidth(vUv * vec2(64.0, 48.0));
         float grid = 1.0 - clamp(min(g.x, g.y), 0.0, 1.0);
-        col += line * vec3(1.0, 0.86, 0.62) * 0.9 + grid * 0.1;
-        float a = smoothstep(0.16, 0.42, h) * uRise;
-        gl_FragColor = vec4(col, a * (0.72 + 0.28 * line));
+        col += line * vec3(1.0, 0.8, 0.55) * 0.35 + grid * 0.05;
+        float a = smoothstep(0.2, 0.5, h) * uRise;
+        gl_FragColor = vec4(col, a * (0.62 + 0.3 * line));
       }`,
   })
 }
@@ -108,7 +108,7 @@ function columnMaterial() {
 
 const composer = new EffectComposer(renderer)
 composer.addPass(new RenderPass(scene, camera))
-const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.7, 0.5, 0.55)
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.45, 0.4, 0.8)
 composer.addPass(bloom)
 composer.addPass(new OutputPass())
 
@@ -120,8 +120,8 @@ let head = 'icm'
 function buildPlate(sample, i) {
   const g = new THREE.Group()
   const off = i - 1
-  g.position.set(off * 2.95, 0, Math.abs(off) * 0.6)
-  g.rotation.y = -off * 0.2
+  g.position.set(off * 2.85, 0, Math.abs(off) * 0.45)
+  g.rotation.y = -off * 0.12
   scene.add(g)
 
   const glass = new THREE.Mesh(new THREE.BoxGeometry(W + 0.16, 0.04, H + 0.16), new THREE.MeshPhysicalMaterial({
@@ -250,12 +250,13 @@ window.addEventListener('resize', resize)
 resize()
 
 const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
-const clock = new THREE.Clock()
+const clock = new THREE.Clock(false)
 let last = 0
 const v = new THREE.Vector3()
 
 const samples = await fetch('/samples/samples.json').then((r) => r.json())
 samples.slice(0, 3).forEach(buildPlate)
+clock.start()
 
 renderer.setAnimationLoop(() => {
   const now = clock.getElapsedTime()
@@ -282,7 +283,7 @@ renderer.setAnimationLoop(() => {
   const h = window.innerHeight
   plates.forEach((p, i) => {
     const u = p.terrain.material.uniforms
-    u.uRise.value = Math.min(1, u.uRise.value + dt * (0.6 + i * 0.1) * (now > 0.6 + i * 0.35 ? 1 : 0))
+    u.uRise.value = ease(THREE.MathUtils.clamp((now - 0.6 - i * 0.35) / 1.4, 0, 1))
     p.lift += ((hovered === i || focused === i ? 0.08 : 0) - p.lift) * Math.min(1, dt * 8)
     p.group.position.y = p.lift
     v.copy(p.top).applyMatrix4(p.group.matrixWorld).project(camera)

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embryo Scan · Design directions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @import '@tabler/icons-webfont/dist/tabler-icons.min.css';
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; background: #0d0f13; color: #eef0f3; font-family: 'Inter Tight', system-ui, sans-serif; padding: 56px clamp(16px, 5vw, 64px); }
+    h1 { font-size: clamp(32px, 4vw, 48px); font-weight: 700; letter-spacing: -0.03em; }
+    p.lead { color: #8e95a1; margin: 10px 0 40px; max-width: 640px; line-height: 1.6; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+    a.card { display: flex; flex-direction: column; gap: 10px; padding: 22px; border-radius: 18px; text-decoration: none; color: inherit; border: 1px solid rgba(255, 255, 255, 0.09); background: rgba(255, 255, 255, 0.03); transition: transform .2s, border-color .2s; }
+    a.card:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.25); }
+    .swatch { height: 150px; border-radius: 12px; margin-bottom: 8px; position: relative; overflow: hidden; }
+    .a .swatch { background: radial-gradient(circle at 50% 45%, rgba(95, 227, 255, 0.55), transparent 32%), radial-gradient(circle at 50% 120%, rgba(95, 227, 255, 0.25), transparent 45%), #050a12; }
+    .b .swatch { background: radial-gradient(circle at 55% 42%, #ffffff 0 17%, rgba(47, 91, 255, 0.25) 18% 19%, transparent 20%), linear-gradient(#f5f7fa, #cfd6df); }
+    .c .swatch { background: radial-gradient(ellipse at 30% 60%, #ffc24a 0 6%, #f06a2a 9%, #5b1a6e 16%, transparent 22%), radial-gradient(ellipse at 70% 55%, #f06a2a 0 4%, #5b1a6e 10%, transparent 16%), #0b0c0f; }
+    .tag { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8e95a1; letter-spacing: 0.08em; text-transform: uppercase; }
+    h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+    h2 i { font-size: 18px; color: #8e95a1; }
+    .card p { color: #a7adb8; line-height: 1.55; font-size: 15px; }
+    .feat { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .feat span { font-size: 12px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); color: #c9ced6; }
+  </style>
+</head>
+<body>
+  <h1>Embryo Scan · design directions</h1>
+  <p class="lead">Three live 3D prototypes for the demo. Drag to orbit in each one. They can be mixed: for example the exhibit's timeline as the opening, the scanner for one embryo, and the relief view to compare several.</p>
+  <div class="grid">
+    <a class="card a" href="./specimen.html">
+      <div class="swatch"></div>
+      <span class="tag">A · dark, holographic</span>
+      <h2>Specimen scanner <i class="ti ti-arrow-up-right"></i></h2>
+      <p>A lab instrument from the near future. The embryo floats above a projector; a scan line sweeps through it and the grade and live-birth estimate assemble around it.</p>
+      <div class="feat"><span>Scan animation</span><span>Cutaway</span><span>Leader-line labels</span><span>Bloom glow</span></div>
+    </a>
+    <a class="card b" href="./exhibit.html">
+      <div class="swatch"></div>
+      <span class="tag">B · bright, museum</span>
+      <h2>Exhibit <i class="ti ti-arrow-up-right"></i></h2>
+      <p>A glass specimen on a plinth, like a Science World display. Scrub from day 0 to day 5 and watch the cells divide into a blastocyst, then look inside.</p>
+      <div class="feat"><span>Day 0-5 timeline</span><span>Cell division</span><span>Glass materials</span><span>Explainer text</span></div>
+    </a>
+    <a class="card c" href="./relief.html">
+      <div class="swatch"></div>
+      <span class="tag">C · real data</span>
+      <h2>Attention relief <i class="ti ti-arrow-up-right"></i></h2>
+      <p>Real microscope photos on a light table. Where the AI looked rises off each photo as glowing terrain, with a column of light for each embryo's estimate.</p>
+      <div class="feat"><span>Real images</span><span>Grad-CAM terrain</span><span>Compare 3 embryos</span><span>Fly-to inspect</span></div>
+    </a>
+  </div>
+</body>
+</html>

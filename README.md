@@ -2,7 +2,7 @@
 
 AI that grades IVF embryos from microscope photos like an expert embryologist, and tests honestly whether the photo helps predict live birth.
 
-> Status: in development. Grading model trained; outcome model and demo app in progress. Numbers below are from development data (cross-validation); the locked test set hasn't been opened yet.
+> Status: in development. Grading model done; outcome experiments and demo app in progress. Outcome numbers are cross-validation on development data; the locked test set hasn't been opened yet.
 
 ## What it does
 - **Grades the embryo.** A day-5 blastocyst photo goes in; out comes a Gardner grade (expansion 1-5, inner cell mass A-C, trophectoderm A-C), the same scale embryologists use.
@@ -17,19 +17,21 @@ AI that grades IVF embryos from microscope photos like an expert embryologist, a
 |---|---|---|---|
 | Individual experts (paper) | 0.78 | 0.74 | 0.70 |
 | Best published model (paper) | 0.85 | 0.69 | 0.62 |
-| Embryo Scan, single fold models | 0.81-0.85 | 0.69-0.72 | 0.65 |
+| **Embryo Scan, 5-model ensemble** | **0.853** (0.81-0.89) | **0.714** (0.66-0.77) | **0.660** (0.60-0.72) |
 
-Our evaluation code reproduces the paper's published XCeption numbers exactly (0.78 / 0.69 / 0.62) before scoring our own model.
+Our evaluation code reproduces the paper's published XCeption numbers exactly (0.78 / 0.69 / 0.62) before scoring our own model. Full breakdown with confusion matrices: [reports/grading.md](reports/grading.md). The main error is optimism: the model calls many grade-B inner cell masses "A", because 77% of its training labels are A.
 
-**Live birth, baselines** (603 embryos, patient-level 5-fold CV, AUC with 95% CI; 0.5 = coin flip):
+**Live birth** (603 embryos, patient-level 5-fold CV, AUC with 95% CI; 0.5 = coin flip):
 
 | Model | AUC |
 |---|---|
 | Age only | 0.53 (0.48-0.58) |
 | Embryologist's grade | 0.55 (0.50-0.60) |
 | All clinical data | 0.47 (0.42-0.52) |
+| AI grade (from the photo) | 0.56 (0.51-0.61) |
+| AI grade + embryologist's grade + age | 0.56 (0.51-0.61) |
 
-In this clinic's data, live birth is barely predictable from age or grade. That's the bar the image model has to clear.
+Honest finding so far: in this clinic's data, live birth is barely predictable from age, the embryologist's grade, or the photo. The AI's grade does as well as the embryologist's, but no model clearly beats age alone (paired differences all include zero). Details: [reports/outcome_lb.md](reports/outcome_lb.md).
 
 ## Data
 Kromp et al. 2023, *An annotated human blastocyst dataset to benchmark deep learning architectures for in vitro fertilization*, Scientific Data. 2,344 day-5 photos (851 patient IDs in the files; the paper reports 837 patients), 754 transferred embryos with outcomes. [figshare](https://doi.org/10.6084/m9.figshare.20123153.v3), CC BY 4.0.

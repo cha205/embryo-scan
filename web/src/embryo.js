@@ -94,6 +94,9 @@ export function createBlastocyst({ expansion = 4, icm = 'A', te = 'A', seed = 7,
     teCells.push({ normal: n.clone(), position: p, quaternion: q.clone(), scale: s.clone() })
   })
   teMesh.userData.cells = teCells
+  // slight per-cell shade differences read as living tissue rather than plastic
+  const shade = new THREE.Color()
+  for (let i = 0; i < tePts.length; i++) teMesh.setColorAt(i, shade.setScalar(0.86 + rand() * 0.14))
   group.add(teMesh)
 
   // Inner cell mass: relaxed cluster pressed against one side of the shell
@@ -133,6 +136,7 @@ export function createBlastocyst({ expansion = 4, icm = 'A', te = 'A', seed = 7,
     q.setFromEuler(new THREE.Euler(rand() * 6, rand() * 6, rand() * 6))
     m.compose(p, q, s.set(r * (0.9 + rand() * 0.2), r, r * (0.85 + rand() * 0.2)))
     icmMesh.setMatrixAt(i, m)
+    icmMesh.setColorAt(i, shade.setScalar(0.8 + rand() * 0.2))
   })
   group.add(icmMesh)
   const icmCenter = pts.reduce((acc, p) => acc.add(p), new THREE.Vector3()).divideScalar(pts.length)
