@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    name: Python lint and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: Install dependencies (CPU-only PyTorch)
+        run: |
+          uv pip install --system torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          uv pip install --system -r requirements.txt -e .
+      - name: Lint and format check
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Tests (the ones that need the datasets or trained models skip)
+        run: pytest -q
+
+  web:
+    name: Web app build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  matlab:
+    name: MATLAB tests
+    # MathWorks licenses MATLAB on GitHub-hosted runners for public repositories only.
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2024a
+          products: Image_Processing_Toolbox
+      - uses: matlab-actions/run-tests@v2
+        with:
+          source-folder: matlab
+          select-by-folder: tests/matlab
