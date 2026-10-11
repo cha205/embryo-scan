@@ -1,0 +1,55 @@
+@import '@tabler/icons-webfont/dist/tabler-icons.min.css';
+
+:root {
+  --bg: #0b0c0f;
+  --ink: #f2efe9;
+  --dim: #8d8a85;
+  --line: rgba(242, 239, 233, 0.12);
+  --hot: #ff8a3d;
+  --sans: 'Inter Tight', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+.mono { font-family: var(--mono); }
+.dim { color: var(--dim); }
+
+.topbar { position: fixed; top: 0; left: 0; right: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 20px 30px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+.brand i { font-size: 20px; color: var(--hot); }
+.brand em { font-style: normal; font-weight: 400; color: var(--dim); padding-left: 10px; border-left: 1px solid var(--line); }
+.seg { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: rgba(20, 21, 25, 0.7); backdrop-filter: blur(10px); }
+.seg button { font: inherit; font-size: 13px; font-weight: 500; color: var(--dim); background: none; border: 0; padding: 7px 13px; border-radius: 7px; cursor: pointer; }
+.seg button.on { color: var(--bg); background: var(--ink); }
+.legend { justify-self: end; width: 180px; font-size: 11px; color: var(--dim); }
+.ramp { height: 6px; border-radius: 3px; margin: 6px 0 4px; background: linear-gradient(90deg, #1b0c2a, #5b1a6e, #b8325e, #f06a2a, #ffc24a, #fff3b0); }
+.ends { display: flex; justify-content: space-between; }
+
+.labels { position: fixed; inset: 0; pointer-events: none; }
+.tag { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); text-align: center; white-space: nowrap; transition: opacity .3s; }
+.tag b { display: block; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; font-family: var(--mono); }
+.tag span { font-size: 12px; color: var(--dim); }
+.tag.best b { color: var(--hot); }
+
+.inspect { position: fixed; right: 28px; top: 86px; width: 300px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(18, 19, 23, 0.82); backdrop-filter: blur(14px); transform: translateX(340px); opacity: 0; transition: transform .45s cubic-bezier(.2, .8, .2, 1), opacity .3s; }
+.inspect.open { transform: none; opacity: 1; }
+.back { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; color: var(--dim); background: none; border: 0; cursor: pointer; margin-bottom: 12px; }
+.back:hover { color: var(--ink); }
+.inspect img { width: 100%; border-radius: 10px; display: block; filter: contrast(1.05); }
+.in-title { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; font-size: 20px; font-weight: 600; }
+.in-title .mono { color: var(--hot); font-size: 26px; }
+.in-sub { font-size: 12px; color: var(--dim); text-align: right; margin-top: 2px; }
+.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+.grades div { padding: 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; }
+.grades b { display: block; font-size: 20px; font-weight: 500; margin-top: 4px; }
+.bars { display: grid; gap: 8px; font-size: 12px; }
+.bars .bar { display: grid; grid-template-columns: 96px 1fr 38px; align-items: center; gap: 8px; }
+.bars .track { height: 5px; background: rgba(242, 239, 233, 0.1); border-radius: 3px; overflow: hidden; }
+.bars .track b { display: block; height: 100%; background: var(--hot); }
+.bars .mono { text-align: right; color: var(--dim); }
+.height { display: grid; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--dim); }
+.height input { width: 100%; accent-color: var(--hot); }
+
+.hint { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dim); white-space: nowrap; }
+.hint i { font-size: 16px; color: var(--hot); }

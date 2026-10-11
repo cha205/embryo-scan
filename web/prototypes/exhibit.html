@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embryo Scan · Exhibit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../src/exhibit.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="callouts" class="callouts callouts-hidden"></div>
+
+  <header class="topbar">
+    <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
+    <nav class="tabs">
+      <a class="active"><i class="ti ti-timeline-event"></i>Develop</a>
+      <a><i class="ti ti-scan"></i>Analyze</a>
+      <a><i class="ti ti-arrows-sort"></i>Compare</a>
+    </nav>
+  </header>
+
+  <section class="story">
+    <div class="day mono" id="st-day">Day 0</div>
+    <h1 id="st-name">Fertilized egg</h1>
+    <p id="st-text"></p>
+    <div class="stat"><i class="ti ti-circles"></i><span id="st-cells">1 cell</span></div>
+    <div class="grades" id="st-grades">
+      <div class="eyebrow">What the AI grades at this stage</div>
+      <div class="chips">
+        <span><i class="ti ti-circle-dashed"></i>Expansion</span>
+        <span class="accent"><i class="ti ti-circle-dot"></i>Inner cell mass</span>
+        <span><i class="ti ti-circles-relation"></i>Trophectoderm</span>
+      </div>
+      <button id="btn-inside" class="primary"><i class="ti ti-eye"></i><span>Look inside</span></button>
+    </div>
+  </section>
+
+  <footer class="timeline">
+    <button id="btn-play" class="play" aria-label="Play"><i class="ti ti-player-play"></i></button>
+    <div class="track" id="track">
+      <div class="rail"><div class="fill" id="fill"></div></div>
+      <div class="handle" id="handle"></div>
+      <div class="marks" id="marks"></div>
+    </div>
+  </footer>
+  <div class="credit mono">Illustrative model of human embryo development</div>
+
+  <script type="module" src="../src/exhibit.js"></script>
+</body>
+</html>

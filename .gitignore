@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data and model weights (download with scripts/download_data.py)
+data/
+runs/
+*.pt
+*.ckpt
+*.onnx
+
+# Caches (uv, Hugging Face)
+.cache/
+
+# Web
+web/node_modules/
+web/dist/
+
+# Local tool config
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

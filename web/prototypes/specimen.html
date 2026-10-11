@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embryo Scan · Specimen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../src/specimen.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="vignette"></div>
+  <div id="callouts" class="callouts"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><i class="ti ti-microscope"></i></span>
+      <span class="brand-name">Embryo Scan</span>
+      <span class="divider"></span>
+      <span class="mono dim">Specimen 0412-B</span>
+      <span class="mono dim">Day 5 blastocyst</span>
+    </div>
+    <div class="status">
+      <span class="pill"><i class="ti ti-circle-check"></i><span id="status-text">Analysis complete</span></span>
+      <span class="mono dim">ConvNeXt-T · 5-fold ensemble</span>
+    </div>
+  </header>
+
+  <aside class="panel panel-left">
+    <div class="eyebrow">Gardner grade</div>
+    <div class="grade mono" id="grade">4AA</div>
+    <div class="row">
+      <div class="row-head"><span>Expansion</span><span class="mono" id="exp-val">4 / 6</span></div>
+      <div class="segments" id="exp-seg"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="hint">Cavity filled, shell thinning</div>
+    </div>
+    <div class="row">
+      <div class="row-head"><span>Inner cell mass</span><span class="mono accent-warm">A <small>91%</small></span></div>
+      <div class="bar warm"><b style="--v:.91"></b></div>
+      <div class="hint">Many cells, tightly packed</div>
+    </div>
+    <div class="row">
+      <div class="row-head"><span>Trophectoderm</span><span class="mono accent">A <small>84%</small></span></div>
+      <div class="bar"><b style="--v:.84"></b></div>
+      <div class="hint">Many cells, even layer</div>
+    </div>
+    <div class="agree"><i class="ti ti-user-check"></i>Embryologist graded 4AA</div>
+  </aside>
+
+  <aside class="panel panel-right">
+    <div class="eyebrow">Chance of live birth</div>
+    <div class="gauge">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="g-track" cx="60" cy="60" r="50"/>
+        <circle class="g-band" cx="60" cy="60" r="50" id="g-band"/>
+        <circle class="g-value" cx="60" cy="60" r="50" id="g-value"/>
+      </svg>
+      <div class="gauge-text"><span class="mono big" id="prob">41</span><span class="mono pct">%</span></div>
+    </div>
+    <div class="interval mono">Likely range 30–53%</div>
+    <div class="compare">
+      <div><span>Age alone</span><span class="mono">28%</span></div>
+      <div><span>Clinic average</span><span class="mono">31%</span></div>
+    </div>
+    <div class="eyebrow mt">What moved the estimate</div>
+    <ul class="factors">
+      <li><span>Inner cell mass</span><span class="fbar pos"><b style="--v:.9"></b></span><span class="mono">+9</span></li>
+      <li><span>Expansion</span><span class="fbar pos"><b style="--v:.5"></b></span><span class="mono">+5</span></li>
+      <li><span>Age 34</span><span class="fbar neg"><b style="--v:.3"></b></span><span class="mono">−3</span></li>
+    </ul>
+  </aside>
+
+  <footer class="dock">
+    <ol class="steps">
+      <li class="done"><i class="ti ti-photo"></i>Image</li>
+      <li class="done"><i class="ti ti-list-check"></i>Grade</li>
+      <li class="done"><i class="ti ti-chart-arcs"></i>Predict</li>
+      <li class="active"><i class="ti ti-flame"></i>Explain</li>
+    </ol>
+    <div class="controls">
+      <button id="btn-scan" title="Run the scan again"><i class="ti ti-scan"></i>Rescan</button>
+      <button id="btn-cut" class="on" title="Cut away the front of the embryo"><i class="ti ti-layers-subtract"></i>Cutaway</button>
+      <button id="btn-labels" class="on"><i class="ti ti-tag"></i>Labels</button>
+      <button id="btn-rotate" class="on"><i class="ti ti-rotate-360"></i>Rotate</button>
+    </div>
+  </footer>
+  <div class="footnote mono">3D model generated from the predicted grade · illustrative · demo values</div>
+
+  <script type="module" src="../src/specimen.js"></script>
+</body>
+</html>
