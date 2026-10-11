@@ -38,5 +38,12 @@ def test_meseguer_categories():
     assert meseguer_category({"t5": 52.0, "s2": 2.0, "cc2": 13.0}) == "B-"
     assert meseguer_category({"t5": 60.0, "s2": 0.5, "cc2": 11.0}) == "C+"
     assert meseguer_category({"t5": 45.0, "s2": 3.0, "cc2": 9.0}) == "D+"
-    assert meseguer_category({"t5": float("nan"), "s2": 0.5, "cc2": 11.0}) == "X"
+    assert meseguer_category({"t5": float("nan"), "s2": 0.5, "cc2": 11.0}) == "C+"  # never reached 5 cells
+    assert meseguer_category({"t5": 52.0, "s2": float("nan"), "cc2": 11.0}) == "X"
     assert direct_cleavage({"cc2": 3.0}) and not direct_cleavage({"cc2": 11.0})
+
+
+def test_skipped_phase_takes_the_next_onset():
+    phase = np.array([P["t2"]] * 3 + [P["t4"]] * 3)  # 2 cells straight to 4
+    on = onsets(phase, np.arange(6.0))
+    assert on["t3"] == on["t4"] == 3.0 and "t5" not in on

@@ -76,20 +76,29 @@ def train(df: pd.DataFrame, cfg: StageConfig, log=print, val: pd.DataFrame | Non
     torch.manual_seed(cfg.seed)
     dev = torch.device("cuda")
     torch.backends.cudnn.benchmark = True
+    assert cfg.stride == OFFSET, "kept frames must include their stacked neighbours"
     arr = np.load(CACHE, mmap_mode="r")
     prev, nxt = neighbours()
-    keep = ((df.groupby("video").cumcount() % cfg.stride) == 0).to_numpy() & (df["phase"].to_numpy() >= 0) & ~df["missing"].to_numpy()
-    rows = np.sort(df["row"].to_numpy()[keep])  # file order: fast reads from a hard drive
-    log(f"loading {len(rows)} training stacks to the GPU")
+    # Keep every `stride`-th frame (stride == OFFSET, so each kept frame's
+    # neighbours are kept too) plus each video's last frame (clamped neighbour).
+    pos = df.groupby("video").cumcount()
+    last = pos == df.groupby("video")["video"].transform("size") - 1
+    frames = np.sort(df["row"].to_numpy()[((pos % cfg.stride) == 0).to_numpy() | last.to_numpy()])
+    log(f"loading {len(frames)} frames to the GPU")
     t0 = time.time()
-    X = torch.empty((len(rows), 3, arr.shape[1], arr.shape[2]), dtype=torch.uint8, device=dev)
-    for s in range(0, len(rows), 4096):
-        r = rows[s:s + 4096]
-        X[s:s + len(r)] = torch.from_numpy(stack(arr, r, prev[r], nxt[r])).to(dev)
+    X = torch.empty((len(frames), arr.shape[1], arr.shape[2]), dtype=torch.uint8, device=dev)
+    for s in range(0, len(frames), 8192):  # file order: fast reads from a hard drive
+        X[s:s + 8192] = torch.from_numpy(np.asarray(arr[frames[s:s + 8192]])).to(dev)
+    slot = {r: i for i, r in enumerate(frames)}
     phase_by_row = dict(zip(df["row"], df["phase"]))
+    missing = set(df.loc[df["missing"], "row"])
+    rows = np.array([r for r in frames if phase_by_row[r] >= 0 and r not in missing])
+    centre = torch.as_tensor([slot[r] for r in rows], device=dev)
+    before = torch.as_tensor([slot[prev[r]] for r in rows], device=dev)
+    after = torch.as_tensor([slot[nxt[r]] for r in rows], device=dev)
     labels = np.array([phase_by_row[r] for r in rows])
     Y = torch.as_tensor(labels, device=dev)
-    log(f"loaded in {time.time() - t0:.0f}s")
+    log(f"loaded in {time.time() - t0:.0f}s; {len(rows)} labelled training stacks")
 
     counts = np.bincount(labels, minlength=len(PHASES)).astype(float)
     w = 1 / np.sqrt(np.maximum(counts, 1))
@@ -107,7 +116,8 @@ def train(df: pd.DataFrame, cfg: StageConfig, log=print, val: pd.DataFrame | Non
         perm = torch.randperm(len(rows), device=dev)
         for i in range(steps):
             idx = perm[i * cfg.batch:(i + 1) * cfg.batch]
-            x = to_net(gpu_augment(X[idx], background=None)).contiguous(memory_format=torch.channels_last)
+            stacked = torch.stack([X[before[idx]], X[centre[idx]], X[after[idx]]], dim=1)
+            x = to_net(gpu_augment(stacked, background=None)).contiguous(memory_format=torch.channels_last)
             with torch.autocast("cuda", dtype=torch.float16):
                 out = model(x)
             loss = F.cross_entropy(out.float(), Y[idx], weight=weights, label_smoothing=0.05)
@@ -125,7 +135,7 @@ def train(df: pd.DataFrame, cfg: StageConfig, log=print, val: pd.DataFrame | Non
             m = ok >= 0
             msg += f" | val frame acc {(p.argmax(1)[m] == ok[m]).mean():.3f}"
         log(msg)
-    del X
+    del X, centre, before, after, Y
     torch.cuda.empty_cache()
     return model.eval()
 

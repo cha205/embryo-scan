@@ -103,10 +103,17 @@ def decode_monotonic(logp: np.ndarray) -> np.ndarray:
 
 
 def onsets(phase: np.ndarray, hours: np.ndarray) -> dict[str, float]:
-    """Hours at which each phase first appears in a frame-by-frame sequence."""
+    """Hours at which the embryo first reached each phase *or a later one*.
+
+    Phases can be skipped when two divisions happen between frames (2 cells
+    straight to 4): then t3 = t4, i.e. the time it first had at least 3 cells.
+    Phases never reached are left out."""
     out = {}
-    for c in np.unique(phase[phase >= 0]):
-        out[PHASES[c]] = float(hours[np.argmax(phase == c)])
+    valid = phase >= 0
+    for c, name in enumerate(PHASES):
+        idx = np.flatnonzero(valid & (phase >= c))
+        if len(idx):
+            out[name] = float(hours[idx[0]])
     return out
 
 
@@ -128,12 +135,13 @@ def meseguer_category(m: dict[str, float]) -> str:
       2. s2 (t4 - t3, how in-sync the 2nd division is) <= 0.76 h -> A or C, else B or D
       3. cc2 (t3 - t2, second cell cycle) <= 11.9 h -> '+', else '-'
     The paper's morphology-based exclusions (fragmentation etc.) need annotations
-    this dataset doesn't have; embryos missing a needed timing get 'X'.
+    this dataset doesn't have. An embryo that never reached 5 cells is outside
+    the t5 window; one that never reached 4 cells can't be scored ('X').
     Times are hours after fertilization."""
     t5, s2, cc2 = (m.get(k, np.nan) for k in ("t5", "s2", "cc2"))
-    if any(np.isnan(v) for v in (t5, s2, cc2)):
+    if np.isnan(s2) or np.isnan(cc2):
         return "X"
-    in_window, in_sync = 48.8 <= t5 <= 56.6, s2 <= 0.76
+    in_window, in_sync = (not np.isnan(t5)) and 48.8 <= t5 <= 56.6, s2 <= 0.76
     cat = ("A" if in_sync else "B") if in_window else ("C" if in_sync else "D")
     return cat + ("+" if cc2 <= 11.9 else "-")
 
