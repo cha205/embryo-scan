@@ -7,6 +7,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: resolve(__dirname, 'index.html'),
+        analyze: resolve(__dirname, 'analyze.html'),
         index: resolve(__dirname, 'prototypes/index.html'),
         specimen: resolve(__dirname, 'prototypes/specimen.html'),
         exhibit: resolve(__dirname, 'prototypes/exhibit.html'),

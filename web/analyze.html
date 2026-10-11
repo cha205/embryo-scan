@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embryo Scan · Analyze</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/app/app.css">
+  <link rel="stylesheet" href="/src/app/analyze.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="labels" class="labels"></div>
+
+  <header class="topbar">
+    <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
+    <nav class="tabs">
+      <a href="/"><i class="ti ti-timeline-event"></i>Develop</a>
+      <a class="active"><i class="ti ti-scan"></i>Analyze</a>
+      <a><i class="ti ti-arrows-sort"></i>Compare</a>
+    </nav>
+    <div class="clock mono"><span>Day 5</span><b>Grade</b></div>
+  </header>
+
+  <aside class="picker">
+    <div class="eyebrow">Day-5 embryos</div>
+    <p class="hint">Photos from the expert-panel test set. No model trained on them.</p>
+    <ul id="samples"></ul>
+  </aside>
+
+  <aside class="result">
+    <div class="eyebrow">AI grade</div>
+    <div class="grade-row"><b class="mono" id="r-grade">4AA</b><span class="vs">panel <b class="mono" id="r-panel">4AA</b></span></div>
+    <p class="grade-explain" id="r-explain"></p>
+    <div class="heads" id="r-heads"></div>
+    <div class="eyebrow mt">Where the AI looked</div>
+    <div class="seg" id="r-seg">
+      <button data-head="icm" class="on">Inner cell mass</button>
+      <button data-head="exp">Expansion</button>
+      <button data-head="te">Trophectoderm</button>
+    </div>
+    <div class="legend"><span>low</span><i></i><span>high</span></div>
+  </aside>
+
+  <div class="credit mono">Photos: Kromp et al. 2023 (CC BY 4.0) · heat map: Grad-CAM averaged over 8 rotations</div>
+  <script type="module" src="/src/app/analyze.js"></script>
+</body>
+</html>
