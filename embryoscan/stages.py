@@ -83,7 +83,9 @@ def train(df: pd.DataFrame, cfg: StageConfig, log=print, val: pd.DataFrame | Non
     # neighbours are kept too) plus each video's last frame (clamped neighbour).
     pos = df.groupby("video").cumcount()
     last = pos == df.groupby("video")["video"].transform("size") - 1
-    frames = np.sort(df["row"].to_numpy()[((pos % cfg.stride) == 0).to_numpy() | last.to_numpy()])
+    on_grid = ((pos % cfg.stride) == 0).to_numpy()
+    frames = np.sort(df["row"].to_numpy()[on_grid | last.to_numpy()])
+    centre_ok = set(df["row"].to_numpy()[on_grid])  # last frames are only neighbours, not samples
     log(f"loading {len(frames)} frames to the GPU")
     t0 = time.time()
     X = torch.empty((len(frames), arr.shape[1], arr.shape[2]), dtype=torch.uint8, device=dev)
@@ -92,7 +94,7 @@ def train(df: pd.DataFrame, cfg: StageConfig, log=print, val: pd.DataFrame | Non
     slot = {r: i for i, r in enumerate(frames)}
     phase_by_row = dict(zip(df["row"], df["phase"]))
     missing = set(df.loc[df["missing"], "row"])
-    rows = np.array([r for r in frames if phase_by_row[r] >= 0 and r not in missing])
+    rows = np.array([r for r in frames if r in centre_ok and phase_by_row[r] >= 0 and r not in missing])
     centre = torch.as_tensor([slot[r] for r in rows], device=dev)
     before = torch.as_tensor([slot[prev[r]] for r in rows], device=dev)
     after = torch.as_tensor([slot[nxt[r]] for r in rows], device=dev)
