@@ -86,8 +86,9 @@ def main():
             "direct_cleavage_ai": direct_cleavage(m_ai), "grade": {"icm": gr.ICM, "te": gr.TE},
         })
         print(f"{vid}: {len(kept_hours)} frames, category AI {videos[-1]['category_ai']} / expert {videos[-1]['category_expert']}")
-    # Compare view: every test video of one held-out patient with several
-    # embryos recorded past day 5, ranked by the viability model's score.
+    # Compare view: every test video of one held-out patient with 3+ embryos
+    # recorded past day 5 (first such patient by ID, a fixed rule), ranked by
+    # the viability model's score.
     vi = pd.read_csv(paths.RUNS / "timelapse" / a.run / "viability_test_ai.csv")
     per_patient = vi.groupby("patient").video.count()
     patient = per_patient[per_patient >= 3].sort_index().index

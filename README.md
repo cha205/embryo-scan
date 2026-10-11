@@ -2,7 +2,7 @@
 
 AI that watches 5-day IVF embryo time-lapse videos, detects every cell division, ranks embryos by predicted viability, and grades the resulting blastocyst like an expert embryologist.
 
-> Status: in development. Time-lapse division model training; grading and ranking results below are final for their stage. The demo app runs locally (see Run it).
+> Status: models trained and evaluated on held-out patients (numbers below are test-set results). Demo app runs locally (see Run it); demo GIF and public release next.
 
 ## What it does
 1. **Detects every cell division in a time-lapse video.** A model labels the development stage of every frame (2 cells, 3 cells, ... blastocyst), then a dynamic program finds the most likely sequence that never goes backwards, which gives each division's time in hours.
@@ -12,17 +12,27 @@ AI that watches 5-day IVF embryo time-lapse videos, detects every cell division,
 
 ## Results
 
-**Viability ranking from day 0-3 timings** (blastocyst by day 5; 97 videos from held-out patients; AUC with 95% CI, 0.5 = coin flip):
+**Division detection** (141 test videos from 108 patients the model never saw, 59k labelled frames):
+- Development stage of each frame: **71.8%** exactly right, **92.8%** within one stage (16 stages), after the never-go-backwards decoding (69.7% before it).
+- Division times vs the embryologist's marks: median error **1.0 h** across all divisions (frames are 15 min apart).
+
+| Division | 2 cells | 3 cells | 4 cells | 5 cells | 8 cells | morula | blastocyst |
+|---|---|---|---|---|---|---|---|
+| Median error (h) | 0.2 | 0.3 | 0.5 | 1.0 | 1.7 | 1.7 | 1.1 |
+| Within 2 h | 94% | 84% | 87% | 70% | 56% | 56% | 68% |
+
+Late stages are harder because cells overlap and get hard to count, for people too. Full table: [reports/timelapse_test.md](reports/timelapse_test.md).
+
+**Viability ranking from day 0-3 timings** (will the embryo form a blastocyst by day 5? 97 test videos recorded that long; AUC with 95% CI, 0.5 = coin flip):
 
 | Timings from | Ranking method | AUC |
 |---|---|---|
 | Embryologist's annotations | Published Meseguer 2011 categories (no training) | 0.68 (0.55-0.78) |
 | Embryologist's annotations | Logistic regression on timings | 0.72 (0.61-0.81) |
-| AI-detected (end to end) | both | *training* |
+| **AI-detected from the raw video (end to end)** | Logistic regression on timings | **0.69** (0.57-0.79) |
+| AI-detected from the raw video | Published Meseguer 2011 categories | 0.61 (0.48-0.73) |
 
-The strongest signal is the length of the second cell cycle (cc2) and direct cleavage (1 -> 3 cells in under 5 h), both known warning signs in the literature.
-
-**Division detection** (held-out patients): *training*.
+From raw video alone, the AI ranks embryos nearly as well as rankings built on an embryologist's hand annotations. The strongest signals are the length of the second cell cycle (cc2) and direct cleavage (1 -> 3 cells in under 5 h), both known warning signs in the literature. Details: [reports/viability.md](reports/viability.md).
 
 **Grading vs experts** (300-photo gold test set graded by a panel of embryologists; accuracy):
 

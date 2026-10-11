@@ -36,9 +36,9 @@ scene.add(new THREE.Mesh(new THREE.SphereGeometry(60, 48, 24), new THREE.ShaderM
     }`,
 })))
 const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200)
-camera.position.set(0, 2.6, 11.5)
+camera.position.set(0, 3.2, 6 + embryos.length * 1.95) // pull back to fit the row
 const controls = new OrbitControls(camera, canvas)
-controls.target.set(0, 1.2, 0)
+controls.target.set(0, 1.25, 0)
 controls.enableDamping = true
 controls.enablePan = false
 controls.minPolarAngle = 0.9
@@ -64,10 +64,10 @@ const cellMat = new THREE.MeshPhysicalMaterial({ color: '#eef2f8', roughness: 0.
 const plinthMat = new THREE.MeshPhysicalMaterial({ color: '#f8f9fb', roughness: 0.5, clearcoat: 0.4 })
 const accentMat = new THREE.MeshBasicMaterial({ color: '#2f5bff' })
 
-const SPACING = 2.1
+const SPACING = 1.75
 const specimens = embryos.map((e, i) => {
   const x = (i - (embryos.length - 1) / 2) * SPACING
-  const h = 0.35 + e.score * 2.4
+  const h = 0.2 + e.score * 2.0 // height is proportional to the predicted chance
   const g = new THREE.Group()
   g.position.set(x, 0, -Math.abs(i - (embryos.length - 1) / 2) * 0.35)
   const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.66, h, 96), plinthMat)
@@ -100,13 +100,12 @@ const specimens = embryos.map((e, i) => {
 
   const tag = document.createElement('div')
   tag.className = `tag${i === 0 ? ' first' : ''}`
-  const times = ['t2', 't3', 't4', 't5', 't8'].map((k) => `${k} ${e.events_ai[k] == null ? '—' : e.events_ai[k].toFixed(1) + 'h'}`).join(' · ')
+  const times = ['t2', 't3', 't4', 't5', 't8'].map((k) => `${k} ${e.events_ai[k] == null ? 'not reached' : e.events_ai[k].toFixed(1) + ' h'}`).join(', ')
+  tag.title = `AI-detected divisions: ${times}. Meseguer category ${e.category}.`
   tag.innerHTML = `<span class="rank">#${i + 1}</span>
-    <div class="thumbs"><div><img src="${e.thumbs.day3 ?? ''}" alt="Day 3 frame"><span>day 3</span></div>
-    <div class="hidden"><img src="${e.thumbs.day5 ?? ''}" alt="Day 5 frame"><span>day 5</span></div></div>
-    <div class="score"><b>${Math.round(e.score * 100)}%</b><small>blastocyst chance</small></div>
-    <div class="times">${times}</div>
-    <div class="outcome ${e.blastocyst ? 'yes' : 'no'}">${e.blastocyst ? 'Became a blastocyst' : 'Did not reach blastocyst'}</div>`
+    <div class="thumb"><img src="${e.thumbs.day3 ?? ''}" alt="Day 3 frame"><img class="d5" src="${e.thumbs.day5 ?? ''}" alt="Day 5 frame"><span class="lbl">day 3</span></div>
+    <div class="score"><b>${Math.round(e.score * 100)}%</b><small>chance</small></div>
+    <div class="outcome ${e.blastocyst ? 'yes' : 'no'}">${e.blastocyst ? 'Blastocyst' : 'Stalled'}</div>`
   $('#tags').append(tag)
   return { group: g, spec, inst, blast, tag, top: new THREE.Vector3(0, h + 1.3, 0), formed: !!e.blastocyst }
 })
@@ -115,7 +114,7 @@ let revealed = false
 $('#btn-reveal').addEventListener('click', () => {
   revealed = !revealed
   document.body.classList.toggle('revealed', revealed)
-  document.querySelectorAll('.tag .thumbs div:last-child').forEach((d) => d.classList.toggle('hidden', !revealed))
+  document.querySelectorAll('.tag .lbl').forEach((s) => { s.textContent = revealed ? 'day 5' : 'day 3' })
   $('#btn-reveal span').textContent = revealed ? 'Back to day 3' : 'Show what happened by day 5'
   specimens.forEach((s) => {
     s.blast.visible = revealed && s.formed
@@ -128,7 +127,7 @@ function resize() {
   const h = window.innerHeight
   renderer.setSize(w, h, false)
   camera.aspect = w / h
-  camera.setViewOffset(w, h, w > 1000 ? -w * 0.14 : 0, 0, w, h)
+  camera.setViewOffset(w, h, w > 1000 ? -w * 0.135 : 0, -h * 0.02, w, h)
   camera.updateProjectionMatrix()
 }
 window.addEventListener('resize', resize)
