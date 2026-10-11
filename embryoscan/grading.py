@@ -59,16 +59,19 @@ def to_net(x: torch.Tensor) -> torch.Tensor:
     return (x.expand(-1, 3, -1, -1) - mean) / std
 
 
-def gpu_augment(x: torch.Tensor) -> torch.Tensor:
+def gpu_augment(x: torch.Tensor, background: float | None = BACKGROUND) -> torch.Tensor:
     """Random rotation (any angle), flip, zoom, shift, brightness, contrast and
-    blur, drawn independently for every image in the batch.
+    blur, drawn independently for every image in the batch (all channels of an
+    image share the same geometry, so stacked video frames stay aligned).
     Embryos have no natural "up", so every rotation is a valid new example.
 
-    x: (B, 1, H, W) uint8 -> (B, 1, H, W) float in [0, 1]
+    x: (B, C, H, W) uint8 -> (B, C, H, W) float in [0, 1]
+    background: fill for rotated-in corners; None uses each image's mean.
     """
     B, _, H, W = x.shape
     dev = x.device
     x = x.float() / 255
+    fill = x.mean(dim=(1, 2, 3), keepdim=True) if background is None else background
 
     def U(lo, hi):
         return torch.empty(B, device=dev).uniform_(lo, hi)
@@ -89,7 +92,7 @@ def gpu_augment(x: torch.Tensor) -> torch.Tensor:
     grid = F.affine_grid(theta, (B, 1, H, W), align_corners=False)
     out = F.grid_sample(x, grid, mode="bilinear", padding_mode="zeros", align_corners=False)
     inside = F.grid_sample(torch.ones_like(x), grid, mode="bilinear", padding_mode="zeros", align_corners=False)
-    out = out + (1 - inside) * BACKGROUND
+    out = out + (1 - inside) * fill
 
     mean = out.mean(dim=(2, 3), keepdim=True)
     out = (out - mean) * U(0.75, 1.25).view(B, 1, 1, 1) + mean + U(-0.08, 0.08).view(B, 1, 1, 1)

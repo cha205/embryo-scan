@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embryo Scan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/app/app.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="callouts" class="callouts callouts-hidden"></div>
+
+  <header class="topbar">
+    <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
+    <nav class="tabs">
+      <a class="active"><i class="ti ti-timeline-event"></i>Develop</a>
+      <a><i class="ti ti-scan"></i>Analyze</a>
+      <a><i class="ti ti-arrows-sort"></i>Compare</a>
+    </nav>
+    <div class="clock mono"><span id="clock-day">Day 0</span><b id="clock-hours">0.0 h</b></div>
+  </header>
+
+  <section class="story">
+    <div class="day mono" id="st-day">Day 0</div>
+    <h1 id="st-name">Fertilized egg</h1>
+    <p id="st-text"></p>
+    <div class="stats">
+      <div class="stat"><span class="mono" id="st-cells">1</span><small>cells</small></div>
+      <div class="stat"><span class="mono" id="st-next">27.0 h</span><small id="st-next-label">next division</small></div>
+    </div>
+    <div class="grades" id="st-grades">
+      <div class="eyebrow">What the AI grades at this stage</div>
+      <div class="chips">
+        <span><i class="ti ti-circle-dashed"></i>Expansion</span>
+        <span class="accent"><i class="ti ti-circle-dot"></i>Inner cell mass</span>
+        <span><i class="ti ti-circles-relation"></i>Trophectoderm</span>
+      </div>
+      <button id="btn-inside" class="primary"><i class="ti ti-eye"></i><span>Look inside</span></button>
+    </div>
+  </section>
+
+  <aside class="real">
+    <div class="real-head">
+      <span class="eyebrow">Real time-lapse</span>
+      <span class="badge mono" id="rv-id">demo timings</span>
+    </div>
+    <div class="frame" id="rv-frame">
+      <img id="rv-img" alt="Microscope frame from the real time-lapse video">
+      <div class="frame-empty" id="rv-empty"><i class="ti ti-video"></i><span>Real video appears here once the division model is trained</span></div>
+      <span class="frame-time mono" id="rv-time">0.0 h</span>
+    </div>
+    <div class="eyebrow mt">Divisions detected by the AI</div>
+    <ol class="events" id="rv-events"></ol>
+    <svg class="chart" id="rv-chart" viewBox="0 0 300 92" preserveAspectRatio="none" aria-label="Cell count over time"></svg>
+    <div class="chart-axis mono"><span>0 h</span><span>cell count</span><span id="rv-axis-end">96 h</span></div>
+  </aside>
+
+  <footer class="timeline">
+    <button id="btn-play" class="play" aria-label="Play"><i class="ti ti-player-play"></i></button>
+    <div class="track" id="track">
+      <div class="rail"><div class="fill" id="fill"></div></div>
+      <div class="events-on-track" id="track-events"></div>
+      <div class="handle" id="handle"></div>
+      <div class="days mono" id="days"></div>
+    </div>
+  </footer>
+  <div class="credit mono">3D twin replays the detected divisions · illustrative model</div>
+
+  <script type="module" src="/src/app/main.js"></script>
+</body>
+</html>

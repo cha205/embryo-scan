@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--lr", type=float, default=TrainConfig.lr)
     ap.add_argument("--exclude-gold-patients", action="store_true",
                     help="drop training images from patients who have a gold test image")
+    ap.add_argument("--subsample", type=int, default=0,
+                    help="randomly keep this many training images (size-matched control)")
     a = ap.parse_args()
 
     out = paths.RUNS / "grader" / a.run
@@ -88,6 +90,8 @@ def main():
         tr = df[(df.split == "pool") & (df.fold != k)]
         if a.exclude_gold_patients:
             tr = tr[~tr.gold_patient]
+        if a.subsample:
+            tr = tr.sample(n=a.subsample, random_state=k)
         oof = df[(df.split == "pool") & (df.fold == k)]
         cfg = TrainConfig(arch=a.arch, epochs=a.epochs, batch=a.batch, lr=a.lr, seed=k)
         log(f"== fold {k}: train {len(tr)} images, out-of-fold {len(oof)}")

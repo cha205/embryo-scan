@@ -10,6 +10,8 @@ import json
 import numpy as np
 import pandas as pd
 
+from sklearn.metrics import balanced_accuracy_score, f1_score
+
 from embryoscan import paths
 from embryoscan.metrics import _cluster_resamples, paper_grading_metrics
 from embryoscan.report import md_table
@@ -41,6 +43,30 @@ def confusion(pred, gold, crit):
     return md_table(t.reset_index(), "{:.0f}")
 
 
+def tune_bias(p: np.ndarray, y: np.ndarray, grid=np.linspace(0, 3, 31)) -> np.ndarray:
+    """Additive log-probability bonus for classes B and C that maximizes
+    balanced accuracy (mean recall over A/B/C). Fitted on out-of-fold
+    predictions for the training pool, never on the gold test set."""
+    logp = np.log(np.clip(p, 1e-6, 1))
+    best, best_b = -1.0, np.zeros(3)
+    for b1 in grid:
+        for b2 in grid:
+            b = np.array([0, b1, b2])
+            score = balanced_accuracy_score(y, (logp + b).argmax(1))
+            if score > best:
+                best, best_b = score, b
+    return best_b
+
+
+def adjusted(pred: pd.DataFrame, bias: dict) -> pd.DataFrame:
+    out = pred.copy()
+    for k, b in bias.items():
+        cols = [f"p_{k}{c}" for c in range(3)]
+        out[k] = (np.log(np.clip(out[cols].to_numpy(), 1e-6, 1)) + b).argmax(1)
+        out.loc[out["exp"] <= 1, k] = 3
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", default="convnext_t")
@@ -65,6 +91,28 @@ def main():
         ["Embryo Scan, single models (mean, range)", *[fold_range(c) for c in CRIT]],
         ["**Embryo Scan, 5-model ensemble** (95% CI)", *[f"**{ens[c]['accuracy']:.3f}** ({cis[c][0]:.2f}-{cis[c][1]:.2f})" for c in CRIT]],
     ]
+    # Class-balance correction tuned on out-of-fold training predictions
+    pool = final[final.split == "pool"].merge(grades[["file", "exp", "icm", "te"]], on="file", suffixes=("", "_silver"))
+    bias = {}
+    for k in ("icm", "te"):
+        ok = pool[f"{k}_silver"].isin([0, 1, 2])
+        bias[k] = tune_bias(pool.loc[ok, [f"p_{k}{c}" for c in range(3)]].to_numpy(), pool.loc[ok, f"{k}_silver"].astype(int).to_numpy())
+    adj = adjusted(final, bias)
+    ens_adj = paper_grading_metrics(adj[COLS], gold[COLS])
+
+    def macro_f1(pred, k):
+        mm = gold.merge(pred[COLS], on="file", suffixes=("_gt", ""))
+        mm = mm[(mm.exp_gt >= 2) & (mm.exp >= 2) & mm[f"{k}_gt"].isin([0, 1, 2]) & mm[k].isin([0, 1, 2])]
+        return f1_score(mm[f"{k}_gt"], mm[k], average="macro"), (mm[mm[f"{k}_gt"] == 2][k] == 2).sum(), (mm[f"{k}_gt"] == 2).sum()
+
+    adj_rows = []
+    for name, pr, mt in (("argmax (as trained)", final, ens), ("balanced thresholds", adj, ens_adj)):
+        row = [name]
+        for k in ("icm", "te"):
+            f1m, c_hit, c_n = macro_f1(pr, k)
+            row.append(f"{mt[k]['accuracy']:.3f} / {f1m:.3f} / {c_hit} of {c_n}")
+        adj_rows.append(row)
+
     text = [
         "# Grading results\n",
         "Gold test set: 300 images graded by a panel of embryologists (majority vote). No grading model trained on "
@@ -75,7 +123,13 @@ def main():
         f"Expansion quadratic-weighted kappa: {ens['exp']['kappa_quadratic']:.3f}.\n",
         "Caveat: the official test set was drawn by image, not by patient, so some training images come from the "
         "same patients as test images (same as the paper's setup). A patient-disjoint check is planned.\n",
-        "## Where the model and the panel disagree\n",
+        "## Rare grades: balanced decision thresholds\n",
+        "Grade C is rare in training (16 ICM and 47 TE labels out of ~1,700), so the plain model almost never "
+        "predicts it. Adding a per-class bonus to the B and C scores, tuned to maximize balanced accuracy on the "
+        "**out-of-fold training predictions** (the gold set is not used), trades a little overall accuracy for "
+        f"catching rare grades. Bonuses (log-prob, A/B/C): ICM {bias['icm'].round(2).tolist()}, TE {bias['te'].round(2).tolist()}.\n",
+        md_table(pd.DataFrame(adj_rows, columns=["decision rule", "ICM: accuracy / macro F1 / C found", "TE: accuracy / macro F1 / C found"])),
+        "\n## Where the model and the panel disagree\n",
         "Expansion grade:\n", confusion(final[COLS], gold, "exp"),
         "\nInner cell mass:\n", confusion(final[COLS], gold, "icm"),
         "\nTrophectoderm:\n", confusion(final[COLS], gold, "te"),

@@ -9,6 +9,7 @@ RAW_ZIP = DATA / "raw" / "Blastocyst_Dataset.zip"
 RAW = DATA / "raw" / "Blastocyst_Dataset"
 IMAGES = RAW / "Images"
 PROCESSED = DATA / "processed"
+GOMEZ = DATA / "raw" / "gomez"  # Gomez et al. 2022 time-lapse videos
 
 SPLITS = ROOT / "splits"  # small CSVs, committed so every result is reproducible
 REPORTS = ROOT / "reports"

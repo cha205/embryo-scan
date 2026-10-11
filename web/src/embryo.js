@@ -208,6 +208,49 @@ export function patchHolo(material, uniforms, { rim = '#5fe3ff', power = 2.2, st
   return material
 }
 
+// The trophectoderm as one continuous sheet: a 3D Voronoi (Worley) pattern on
+// a sphere draws cell borders, a nucleus near each cell centre, and a slight
+// per-cell shade, instead of hundreds of separate discs.
+export function epitheliumMaterial({ freq = 7.5, nucleus = '#7186c2', ...params } = {}) {
+  const mat = new THREE.MeshPhysicalMaterial(params)
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uFreq = { value: freq }
+    shader.uniforms.uNucleus = { value: new THREE.Color(nucleus) }
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vObj;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position;')
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec3 vObj;
+        uniform float uFreq;
+        uniform vec3 uNucleus;
+        vec3 hash3(vec3 p) {
+          p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
+          return fract(sin(p) * 43758.5453123);
+        }
+        vec3 worley(vec3 x) {
+          vec3 p = floor(x), f = fract(x);
+          float d1 = 8.0, d2 = 8.0, id = 0.0;
+          for (int k = -1; k <= 1; k++) for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+            vec3 b = vec3(float(i), float(j), float(k));
+            vec3 r = b + hash3(p + b) - f;
+            float d = dot(r, r);
+            if (d < d1) { d2 = d1; d1 = d; id = dot(p + b, vec3(7.0, 157.0, 113.0)); }
+            else if (d < d2) { d2 = d; }
+          }
+          return vec3(sqrt(d1), sqrt(d2), fract(sin(id) * 43758.5453));
+        }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        vec3 w = worley(normalize(vObj) * uFreq);
+        float border = 1.0 - smoothstep(0.015, 0.075, w.y - w.x);
+        float nuc = 1.0 - smoothstep(0.11, 0.17, w.x);
+        diffuseColor.rgb *= (0.9 + 0.1 * w.z) * mix(1.0, 0.72, border);
+        diffuseColor.rgb = mix(diffuseColor.rgb, uNucleus, nuc * 0.7);`)
+  }
+  mat.customProgramCacheKey = () => `epithelium-${freq}`
+  return mat
+}
+
 export function fluidMaterial(uniforms, color = '#9fe8ff', size = 2.2, opacity = 0.55) {
   return new THREE.ShaderMaterial({
     transparent: true,

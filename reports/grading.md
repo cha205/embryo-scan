@@ -14,6 +14,15 @@ Ensemble weighted F1: expansion 0.852, ICM 0.672, TE 0.608. Expansion quadratic-
 
 Caveat: the official test set was drawn by image, not by patient, so some training images come from the same patients as test images (same as the paper's setup). A patient-disjoint check is planned.
 
+## Rare grades: balanced decision thresholds
+
+Grade C is rare in training (16 ICM and 47 TE labels out of ~1,700), so the plain model almost never predicts it. Adding a per-class bonus to the B and C scores, tuned to maximize balanced accuracy on the **out-of-fold training predictions** (the gold set is not used), trades a little overall accuracy for catching rare grades. Bonuses (log-prob, A/B/C): ICM [0.0, 0.0, 0.9], TE [0.0, 0.1, 1.3].
+
+| decision rule | ICM: accuracy / macro F1 / C found | TE: accuracy / macro F1 / C found |
+|---|---|---|
+| argmax (as trained) | 0.714 / 0.488 / 1 of 16 | 0.660 / 0.525 / 3 of 30 |
+| balanced thresholds | 0.697 / 0.489 / 2 of 16 | 0.672 / 0.615 / 12 of 30 |
+
 ## Where the model and the panel disagree
 
 Expansion grade:

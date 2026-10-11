@@ -6,6 +6,7 @@ export default defineConfig({
     target: 'es2022', // top-level await
     rollupOptions: {
       input: {
+        app: resolve(__dirname, 'index.html'),
         index: resolve(__dirname, 'prototypes/index.html'),
         specimen: resolve(__dirname, 'prototypes/specimen.html'),
         exhibit: resolve(__dirname, 'prototypes/exhibit.html'),
