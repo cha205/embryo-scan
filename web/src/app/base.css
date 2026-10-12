@@ -44,3 +44,13 @@ button { font: inherit; cursor: pointer; }
 .callout { position: absolute; left: 0; top: 0; font-size: 14px; font-weight: 600; white-space: nowrap; }
 .callout span { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 2px; }
 .callout.accent { color: var(--cobalt); }
+
+/* phones: the 3D lab is laid out for bigger screens, so it says so first (shared/small-screen.js) */
+.small-screen { display: none; }
+@media (max-width: 760px) {
+  .small-screen:not([hidden]) { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(232, 235, 240, 0.88); backdrop-filter: blur(12px); }
+}
+.small-screen .card { max-width: 340px; padding: 24px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(13, 20, 36, 0.12); }
+.small-screen .card > i { font-size: 28px; color: var(--cobalt); }
+.small-screen h2 { font-size: 20px; margin: 10px 0 8px; }
+.small-screen p { font-size: 14px; line-height: 1.55; color: var(--muted); margin-bottom: 18px; }

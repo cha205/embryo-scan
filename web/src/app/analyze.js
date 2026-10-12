@@ -3,6 +3,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
+import { API } from '../shared/api.js'
+import '../shared/small-screen.js'
 
 const W = 2.4
 const H = 1.8
@@ -210,22 +212,55 @@ document.querySelectorAll('#r-seg button').forEach((b) => b.addEventListener('cl
 // ---------------------------------------------------------------- your photo
 // Sent to the grading server (server/main.py), which returns the photo as the
 // model saw it, the grade and a heat map per head, in the same shape as a sample.
+// Locally the server is started by hand; on the public site it's a Hugging Face
+// Space that sleeps when idle, so the page waits for it to wake.
 const upload = $('#upload')
 const input = upload.querySelector('input')
 const note = $('#upload-note')
 const NOTE = note.textContent
-const OFFLINE = 'Grading your own photo needs the local server: uvicorn server.main:app --port 8000, then reload.'
+const OFFLINE = API
+  ? 'The photo grader is offline right now. Try again later.'
+  : 'Grading your own photo needs the local server: uvicorn server.main:app --port 8000, then reload.'
+const WAKE_TRIES = 24 // ~5 s apart: a sleeping Space takes about a minute to start
+let views = 8
 let uploads = 0
 
 function setUpload(mode, message = NOTE) {
-  upload.classList.toggle('busy', mode === 'busy')
+  upload.classList.toggle('busy', mode === 'busy' || mode === 'waking')
   upload.classList.toggle('offline', mode === 'offline')
   input.disabled = mode !== 'ready'
-  upload.querySelector('.ico i').className = `ti ${{ busy: 'ti-loader-2', offline: 'ti-plug-connected-x' }[mode] ?? 'ti-upload'}`
-  $('#upload-title').textContent = { busy: 'Grading…', offline: 'Grading server offline' }[mode] ?? 'Grade a photo'
-  $('#upload-sub').textContent = { busy: '5 models × 8 views', offline: 'see below' }[mode] ?? 'PNG or JPG, or drop it here'
+  const [icon, title, sub] = {
+    busy: ['ti-loader-2', 'Grading…', `5 models × ${views} views`],
+    waking: ['ti-loader-2', 'Waking the grader…', 'about a minute'],
+    offline: ['ti-plug-connected-x', 'Grader offline', 'see below'],
+  }[mode] ?? ['ti-upload', 'Grade a photo', 'PNG or JPG, or drop it here']
+  upload.querySelector('.ico i').className = `ti ${icon}`
+  $('#upload-title').textContent = title
+  $('#upload-sub').textContent = sub
   note.textContent = mode === 'offline' ? OFFLINE : message
   note.classList.toggle('error', message !== NOTE)
+}
+
+async function connect() {
+  const tries = API ? WAKE_TRIES : 1
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(`${API}/api/health`, { signal: AbortSignal.timeout(10000) })
+      const h = r.ok ? await r.json() : null
+      if (h?.models) {
+        views = h.views ?? 8
+        setUpload('ready')
+        return
+      }
+    } catch {
+      // asleep, still starting, or not running
+    }
+    if (i + 1 < tries) {
+      setUpload('waking')
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
+  }
+  setUpload('offline')
 }
 
 async function gradeFile(file) {
@@ -242,7 +277,7 @@ async function gradeFile(file) {
   try {
     const body = new FormData()
     body.append('file', file)
-    const r = await fetch('/api/grade', { method: 'POST', body })
+    const r = await fetch(`${API}/api/grade`, { method: 'POST', body })
     const res = await r.json().catch(() => ({}))
     if (!r.ok) throw new Error(res.detail ?? OFFLINE)
     uploads += 1
@@ -274,10 +309,7 @@ window.addEventListener('drop', (e) => {
   document.body.classList.remove('dropping')
   gradeFile(e.dataTransfer.files[0])
 })
-fetch('/api/health')
-  .then((r) => (r.ok ? r.json() : Promise.reject(new Error())))
-  .then((h) => setUpload(h.models ? 'ready' : 'offline'))
-  .catch(() => setUpload('offline'))
+connect()
 
 function resize() {
   const w = window.innerWidth

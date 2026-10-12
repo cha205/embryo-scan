@@ -134,7 +134,7 @@ matlab -batch "assertSuccess(runtests('tests/matlab'))"
 uvicorn server.main:app --port 8000
 cd web && npm install && npm run dev
 ```
-Every script takes `--help`. The live-birth analyses are `scripts/blastocyst/run_baselines.py`, `run_outcome_models.py` and `finetune_outcome.py`.
+Every script takes `--help`. The live-birth analyses are `scripts/blastocyst/run_baselines.py`, `run_outcome_models.py` and `finetune_outcome.py`. Putting the demo online (static app on Vercel or Netlify, grader on a free Hugging Face Space): [docs/deploy.md](docs/deploy.md).
 
 ## Limitations
 - The video dataset has no pregnancy outcomes, so viability means blastocyst formation by day 5, not pregnancy.

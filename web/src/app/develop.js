@@ -6,7 +6,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 import { createBlastocyst, epitheliumMaterial, fluidMaterial } from '../shared/embryo.js'
 import { Callouts } from '../shared/callouts.js'
+import { wakeGrader } from '../shared/api.js'
+import '../shared/small-screen.js'
 import { buildTwin, TYPICAL } from './twin.js'
+
+wakeGrader()
 
 // ---------------------------------------------------------------- data
 const demo = await fetch('/timelapse/demo.json').then((r) => (r.ok ? r.json() : null)).catch(() => null)

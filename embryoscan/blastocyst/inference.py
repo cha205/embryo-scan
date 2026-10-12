@@ -45,19 +45,23 @@ def load_ensemble(run: str = DEFAULT_RUN, device: str | None = None, folds=range
     return models
 
 
+DIHEDRAL = [(k, flip) for k in range(4) for flip in (False, True)]  # the order of dihedral_views()
+
+
 @torch.no_grad()
-def grade(models: list[nn.Module], gray_u8: torch.Tensor, tta: bool = True) -> dict:
-    """Average class probabilities over models and the 8 rotations/flips."""
+def grade(models: list[nn.Module], gray_u8: torch.Tensor, views: int = 8) -> dict:
+    """Average class probabilities over the models and the first `views` of
+    the 8 rotations/flips (8 = full test-time augmentation, 1 = none)."""
     dev = next(models[0].parameters()).device
     x = to_net(gray_u8.to(dev).float() / 255)
-    views = dihedral_views(x) if tta else [x]
+    xs = dihedral_views(x)[:views]
     acc = {k: 0 for k in HEADS}
     for m in models:
-        for v in views:
+        for v in xs:
             out = m(v)
             for k in HEADS:
                 acc[k] = acc[k] + out[k].float().softmax(-1)[0].cpu().numpy()
-    n = len(models) * len(views)
+    n = len(models) * len(xs)
     probs = {k: (acc[k] / n).tolist() for k in HEADS}
     row = {f"p_{k}{c}": probs[k][c] for k in HEADS for c in range(len(probs[k]))}
     d = decode(pd.DataFrame([row])).iloc[0]
@@ -83,20 +87,23 @@ def _undo(cam: np.ndarray, k: int, flip: bool) -> np.ndarray:
     return np.rot90(cam, -k, axes=(-2, -1))
 
 
-def heatmap(model: nn.Module, gray_u8: torch.Tensor, head: str, cls: int, smooth: float = 9.0) -> np.ndarray:
-    """Grad-CAM for one head and class, averaged over the 8 rotations/flips.
-    Grad-CAM is computed on the network's 9x12 feature grid, so it's smoothed
-    (Gaussian, `smooth` px) to remove the blocky upsampling.
+def heatmap(
+    model: nn.Module, gray_u8: torch.Tensor, head: str, cls: int, smooth: float = 9.0, views: int = 8
+) -> np.ndarray:
+    """Grad-CAM for one head and class, averaged over the first `views` of the
+    8 rotations/flips. Grad-CAM is computed on the network's 9x12 feature grid,
+    so it's smoothed (Gaussian, `smooth` px) to remove the blocky upsampling.
     Returns (288, 384) floats in [0, 1]."""
     dev = next(model.parameters()).device
     x = to_net(gray_u8.to(dev).float() / 255)
     cam = GradCAM(model=_Head(model, head), target_layers=[model.backbone.stages[-1]])
+    pairs = DIHEDRAL[:views]
     acc = 0
-    for k in range(4):
-        for flip in (False, True):
-            v = torch.rot90(x, k, dims=(2, 3))
-            if flip:
-                v = torch.flip(v, dims=(3,))
-            acc = acc + _undo(cam(input_tensor=v, targets=[ClassifierOutputTarget(cls)])[0], k, flip)
-    acc = gaussian_filter(acc / 8, smooth) if smooth else acc / 8
+    for k, flip in pairs:
+        v = torch.rot90(x, k, dims=(2, 3))
+        if flip:
+            v = torch.flip(v, dims=(3,))
+        acc = acc + _undo(cam(input_tensor=v, targets=[ClassifierOutputTarget(cls)])[0], k, flip)
+    acc = acc / len(pairs)
+    acc = gaussian_filter(acc, smooth) if smooth else acc
     return (acc - acc.min()) / (acc.max() - acc.min() + 1e-8)
