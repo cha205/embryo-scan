@@ -12,7 +12,7 @@ Gold test set: 300 images graded by a panel of embryologists (majority vote). No
 
 Ensemble weighted F1: expansion 0.852, ICM 0.672, TE 0.608. Expansion quadratic-weighted kappa: 0.916.
 
-Caveat: the official test set was drawn by image, not by patient, so some training images come from the same patients as test images (same as the paper's setup). A patient-disjoint check is planned.
+The official test set was drawn by image, not by patient, so 30% of training images come from patients who also have a test image (same as the paper's setup). Retraining without those patients changes accuracy by less than 0.01 against a size-matched control: [patient-overlap-check.md](patient-overlap-check.md).
 
 ## Rare grades: balanced decision thresholds
 

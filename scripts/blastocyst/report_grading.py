@@ -172,8 +172,9 @@ def main():
         f"\nEnsemble weighted F1: expansion {ens['exp']['f1_w']:.3f}, ICM {ens['icm']['f1_w']:.3f}, "
         f"TE {ens['te']['f1_w']:.3f}. "
         f"Expansion quadratic-weighted kappa: {ens['exp']['kappa_quadratic']:.3f}.\n",
-        "Caveat: the official test set was drawn by image, not by patient, so some training images come from the "
-        "same patients as test images (same as the paper's setup). A patient-disjoint check is planned.\n",
+        "The official test set was drawn by image, not by patient, so 30% of training images come from patients who "
+        "also have a test image (same as the paper's setup). Retraining without those patients changes accuracy by "
+        "less than 0.01 against a size-matched control: [patient-overlap-check.md](patient-overlap-check.md).\n",
         "## Rare grades: balanced decision thresholds\n",
         "Grade C is rare in training (16 ICM and 47 TE labels out of ~1,700), so the plain model almost never "
         "predicts it. Adding a per-class bonus to the B and C scores, tuned to maximize balanced accuracy on the "

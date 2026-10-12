@@ -5,9 +5,14 @@ Each fold model trains on 4/5 of the pool and predicts the remaining 1/5, so
 every pool image gets an out-of-fold grade. Gold and held-out images are graded
 by the average of all 5 models (an ensemble).
 
+The gold test set was drawn by image, so 30% of pool images come from patients
+who also have a gold image. --exclude-gold-patients trains without them;
+--size-matched is its control, dropping the same number of random images.
+
 Usage:
   python scripts/blastocyst/train_grader.py                         # 5 folds + combine
-  python scripts/blastocyst/train_grader.py --run grader-strict --folds 0 --exclude-gold-patients
+  python scripts/blastocyst/train_grader.py --run grader-no-gold-patients --exclude-gold-patients
+  python scripts/blastocyst/train_grader.py --run grader-size-matched --size-matched
 """
 
 import argparse
@@ -68,13 +73,16 @@ def main():
     ap.add_argument("--batch", type=int, default=TrainConfig.batch)
     ap.add_argument("--arch", default=TrainConfig.arch)
     ap.add_argument("--lr", type=float, default=TrainConfig.lr)
-    ap.add_argument(
+    variant = ap.add_mutually_exclusive_group()
+    variant.add_argument(
         "--exclude-gold-patients",
         action="store_true",
         help="drop training images from patients who have a gold test image",
     )
-    ap.add_argument(
-        "--subsample", type=int, default=0, help="randomly keep this many training images (size-matched control)"
+    variant.add_argument(
+        "--size-matched",
+        action="store_true",
+        help="control for --exclude-gold-patients: drop the same number of random training images instead",
     )
     a = ap.parse_args()
 
@@ -93,10 +101,11 @@ def main():
     log(f"config: {vars(a)}")
     for k in a.folds:
         tr = df[(df.split == "pool") & (df.fold != k)]
+        no_gold_patients = tr[~tr.gold_patient]
         if a.exclude_gold_patients:
-            tr = tr[~tr.gold_patient]
-        if a.subsample:
-            tr = tr.sample(n=a.subsample, random_state=k)
+            tr = no_gold_patients
+        elif a.size_matched:
+            tr = tr.sample(n=len(no_gold_patients), random_state=k)
         oof = df[(df.split == "pool") & (df.fold == k)]
         cfg = TrainConfig(arch=a.arch, epochs=a.epochs, batch=a.batch, lr=a.lr, seed=k)
         log(f"== fold {k}: train {len(tr)} images, out-of-fold {len(oof)}")
