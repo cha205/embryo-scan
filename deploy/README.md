@@ -25,7 +25,7 @@ hf upload USER/embryo-scan-grader deploy/model-card.md README.md
 ## 2. Create the Space
 
 1. On huggingface.co, create a new Space named `embryo-scan` with the Docker SDK (blank template), the free CPU basic hardware, and public visibility.
-2. Upload `Dockerfile` and `README.md` from `deploy/huggingface-space/`. If your usernames aren't `cha205`, change `GITHUB_REPO` and `MODEL_REPO` at the top of the Dockerfile first.
+2. Upload `Dockerfile` and `README.md` from `deploy/huggingface-space/`. If you're deploying from a fork or a different Hugging Face account, change `GITHUB_REPO` and `MODEL_REPO` at the top of the Dockerfile first.
 3. Under Settings → Variables, add `ALLOWED_ORIGINS` set to `APP_URL`. Separate several addresses with commas.
 4. The build takes about 5 minutes. When `https://USER-embryo-scan.hf.space/api/health` shows `"models": 5`, the grader is up.
 

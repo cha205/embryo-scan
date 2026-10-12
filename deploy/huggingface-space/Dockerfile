@@ -4,7 +4,7 @@
 FROM python:3.12-slim
 
 ARG GITHUB_REPO=https://github.com/cha205/embryo-scan.git
-ARG MODEL_REPO=cha205/embryo-scan-grader
+ARG MODEL_REPO=Cfish14/embryo-scan-grader
 
 # git for the clone; OpenCV (used by pytorch-grad-cam) needs the GL and GLib libraries
 RUN apt-get update \
