@@ -1,7 +1,4 @@
-"""Grade a single embryo photo with the 5-model ensemble, plus Grad-CAM heat maps.
-
-Used by the demo server (server/main.py) and scripts/blastocyst/export_demo.py.
-"""
+"""Grade one embryo photo with the 5-model ensemble and compute Grad-CAM heat maps."""
 
 from __future__ import annotations
 
@@ -21,11 +18,9 @@ from .grading import DEFAULT_RUN, HEADS, IMAGE_HW, Grader, decode
 
 
 def load_image(img: Image.Image) -> torch.Tensor:
-    """Any embryo photo -> (1, 1, 288, 384) uint8, matching the training cache.
-
-    Photos that aren't 4:3 are centre-cropped to 4:3 first instead of being
-    stretched; the dataset's own 512 x 384 photos are unchanged. Phone photos
-    are turned upright from their EXIF orientation."""
+    """Photo to a (1, 1, 288, 384) uint8 tensor like the training cache. Other
+    aspect ratios are center-cropped to 4:3 instead of stretched, and EXIF
+    rotation is applied."""
     h, w = IMAGE_HW
     g = ImageOps.exif_transpose(img).convert("L")
     scale = min(g.width / w, g.height / h)

@@ -1,6 +1,6 @@
-// Compare tab: one held-out patient's embryos on plinths. Each glass specimen
-// shows that embryo at day 3, rebuilt from the divisions the AI detected in its
-// video; plinth height is the predicted chance of becoming a blastocyst.
+// Compare tab: one held-out patient's embryos on plinths. Each specimen is that
+// embryo at day 3, rebuilt from the divisions detected in its video, and the
+// plinth height is its predicted chance of becoming a blastocyst.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'

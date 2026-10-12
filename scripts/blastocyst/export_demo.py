@@ -1,11 +1,8 @@
-"""Export sample embryos for the web app's Analyze tab: the photo, the
-ensemble's grade, and Grad-CAM heat maps (where the model looked) per head.
+"""Export sample embryos for the Analyze tab: photo, ensemble grade and Grad-CAM heat maps.
 
-Picks gold-test images (never seen by any grading model) whose expert-panel
-grade is one of WANTED, preferring images the experts agreed on most.
-
-Writes web/public/blastocyst/samples.json and samples/<id>/{photo.jpg,
-heatmap-exp.png, heatmap-icm.png, heatmap-te.png}.
+Uses gold-test images (never seen by a grading model) with the panel grades in
+WANTED, preferring the ones the experts agreed on most. Writes
+web/public/blastocyst/samples.json and one folder per sample.
 
 Usage: python scripts/blastocyst/export_demo.py [--run grader-convnext-tiny]
 """
@@ -34,7 +31,7 @@ def main():
     grades = pd.read_csv(paths.BLASTOCYST_GRADES)
     gold = grades[(grades.label_set == "gold") & grades[["exp", "icm", "te"]].notna().all(axis=1)]
     models = load_ensemble(a.run)
-    shutil.rmtree(OUT / "samples", ignore_errors=True)  # no stale samples left behind
+    shutil.rmtree(OUT / "samples", ignore_errors=True)  # drop samples from earlier exports
     manifest = []
     for label, (e, i, t) in WANTED:
         pick = gold[(gold.exp == e) & (gold.icm == i) & (gold.te == t)].sort_values(

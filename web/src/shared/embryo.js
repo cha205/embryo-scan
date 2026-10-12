@@ -1,14 +1,11 @@
-// Procedural 3D blastocyst, driven by its Gardner grade.
+// Procedural 3D blastocyst built from a Gardner grade. It illustrates what a
+// grade means; it is not reconstructed from the 2D photos.
 //
-// This is an illustration, not a reconstruction: the AI works on 2D microscope
-// photos. The 3D model is built from the predicted grade so the viewer can see
-// what "expansion 4, inner cell mass A, trophectoderm A" means.
-//
-// Parts (all children of the returned group, unit = zona outer radius):
-//   zona     the shell around the embryo (zona pellucida)
-//   te       trophectoderm: one layer of flat cells lining the inside (-> placenta)
-//   icm      inner cell mass: a tight cluster at one side (-> the baby)
-//   fluid    particles drifting in the fluid-filled cavity (blastocoel)
+// Parts (children of the returned group, unit = outer radius of the zona):
+//   zona   the shell around the embryo (zona pellucida)
+//   te     trophectoderm, the layer of flat cells lining the shell
+//   icm    inner cell mass, a tight cluster on one side
+//   fluid  particles in the fluid-filled cavity
 import * as THREE from 'three'
 
 export function rng(seed = 1) {
@@ -174,8 +171,8 @@ export function createBlastocyst({ expansion = 4, icm = 'A', te = 'A', seed = 7,
   return group
 }
 
-// Inject a view-angle rim glow and a moving horizontal "scan band" into any
-// MeshStandard/MeshPhysical material (works with InstancedMesh).
+// Adds a rim glow and a moving horizontal scan band to a MeshStandard or
+// MeshPhysical material (also works with InstancedMesh). Used by the hologram prototype.
 export function patchHolo(material, uniforms, { rim = '#5fe3ff', power = 2.2, strength = 1.0, scan = '#b9f6ff', scanStrength = 1.6 } = {}) {
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms, {
@@ -208,9 +205,9 @@ export function patchHolo(material, uniforms, { rim = '#5fe3ff', power = 2.2, st
   return material
 }
 
-// The trophectoderm as one continuous sheet: a 3D Voronoi (Worley) pattern on
-// a sphere draws cell borders, a nucleus near each cell centre, and a slight
-// per-cell shade, instead of hundreds of separate discs.
+// Trophectoderm as one continuous sheet. A 3D Voronoi (Worley) pattern on the
+// sphere draws the cell borders, a nucleus near each cell center and a slight
+// per-cell shade, which is cheaper than hundreds of separate meshes.
 export function epitheliumMaterial({ freq = 7.5, nucleus = '#7186c2', ...params } = {}) {
   const mat = new THREE.MeshPhysicalMaterial(params)
   mat.onBeforeCompile = (shader) => {

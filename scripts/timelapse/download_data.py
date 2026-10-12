@@ -1,10 +1,9 @@
-"""Download the Gomez et al. 2022 human embryo time-lapse dataset (in-focus plane
-only, 12.2 GB) plus its annotations, frame timestamps and blastocyst grades.
+"""Download the Gomez et al. 2022 time-lapse dataset (in-focus plane, 12.2 GB) and its annotations.
 
-Source: https://doi.org/10.5281/zenodo.7912264 (CC BY-NC-SA 4.0)
-Zenodo throttles each connection (~1.3 MB/s), so large files are fetched as
-64 MB byte ranges over several connections. Interrupted downloads resume,
-MD5 is checked, and archives are extracted safely.
+Source: https://doi.org/10.5281/zenodo.7912264 (CC BY-NC-SA 4.0). Zenodo throttles
+each connection to about 1.3 MB/s, so large files are fetched as 64 MB ranges over
+several connections. Downloads resume, MD5 sums are checked, and archives are
+extracted with tarfile's data filter.
 
 Usage: python scripts/timelapse/download_data.py [--delete-archives] [--connections 6]
 """

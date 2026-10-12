@@ -1,6 +1,5 @@
-// Develop tab (design B, "Exhibit"): a glass specimen in a culture dish under
-// a microscope objective. The 3D twin divides at the times the AI detected in a
-// real time-lapse video, which plays alongside.
+// Develop tab: a 3D embryo in a culture dish under a microscope objective. It
+// divides at the times detected in a real time-lapse video, which plays alongside.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
@@ -206,7 +205,7 @@ const blast = createBlastocyst({
 blast.userData.parts.zona.visible = false
 specimen.add(blast)
 const { anchors, parts, teRadius } = blast.userData
-// one continuous trophectoderm sheet (cell borders + nuclei drawn by shader)
+// the trophectoderm is one sheet; its cell borders and nuclei are drawn by the shader
 parts.te.visible = false
 const teSheet = new THREE.Mesh(new THREE.SphereGeometry(teRadius, 160, 120), epitheliumMaterial({
   freq: 3.7, // ~170 cells over the sphere, like a grade-A trophectoderm
@@ -214,7 +213,6 @@ const teSheet = new THREE.Mesh(new THREE.SphereGeometry(teRadius, 160, 120), epi
   clearcoat: 0.7, clearcoatRoughness: 0.15, sheen: 0.5, sheenColor: '#dbe6ff', side: THREE.DoubleSide, clippingPlanes: [cut],
 }))
 blast.add(teSheet)
-const teNuclei = { material: { opacity: 0 } } // nuclei now live in the sheet's shader
 
 const callouts = new Callouts(document.querySelector('#callouts'), camera)
 callouts.add({ object: blast, local: anchors.icm, side: 1, slot: 0, className: 'accent', html: 'Inner cell mass<span>becomes the baby</span>' })
@@ -446,7 +444,6 @@ renderer.setAnimationLoop(() => {
   const expand = smooth((h - E.tB) / Math.max(3, E.tEB - E.tB + 4))
   blast.scale.setScalar(THREE.MathUtils.lerp(0.62, 0.95, form) + 0.04 * expand)
   teSheet.material.opacity = form
-  teNuclei.material.opacity = form
   parts.icm.material.opacity = smooth((h - E.tSB - 2) / Math.max(2, E.tB - E.tSB))
   parts.fluid.material.uniforms.uOpacity.value = 0.5 * form
   zona.scale.setScalar(1 + 0.05 * expand)

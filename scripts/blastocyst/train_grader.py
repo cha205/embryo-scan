@@ -1,16 +1,13 @@
-"""Train the grading model with 5-fold cross-fitting and benchmark it on the
-multi-expert gold test set.
+"""Train the grading model with 5-fold cross-fitting and evaluate it on the gold test set.
 
-Each fold model trains on 4/5 of the pool and predicts the remaining 1/5, so
-every pool image gets an out-of-fold grade. Gold and held-out images are graded
-by the average of all 5 models (an ensemble).
-
-The gold test set was drawn by image, so 30% of pool images come from patients
-who also have a gold image. --exclude-gold-patients trains without them;
---size-matched is its control, dropping the same number of random images.
+Each fold model trains on 4/5 of the pool and grades the remaining 1/5, so every
+pool image gets an out-of-fold grade; gold and held-out images get the average
+of all 5 models. --exclude-gold-patients drops pool images from patients who
+also have a gold image, and --size-matched drops the same number of random
+images instead (see check_patient_overlap.py).
 
 Usage:
-  python scripts/blastocyst/train_grader.py                         # 5 folds + combine
+  python scripts/blastocyst/train_grader.py
   python scripts/blastocyst/train_grader.py --run grader-no-gold-patients --exclude-gold-patients
   python scripts/blastocyst/train_grader.py --run grader-size-matched --size-matched
 """

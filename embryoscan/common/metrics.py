@@ -1,9 +1,6 @@
-"""Evaluation metrics with honest uncertainty.
+"""Evaluation metrics with patient-level bootstrap confidence intervals.
 
-AUC (area under the ROC curve) is the chance that the model scores a random
-positive case above a random negative one: 0.5 is a coin flip, 1.0 is perfect.
-Confidence intervals come from a patient-level (cluster) bootstrap, because two
-embryos from one double-transfer patient are not independent samples.
+Embryos from the same patient aren't independent, so resamples draw whole patients.
 """
 
 from __future__ import annotations
@@ -78,12 +75,12 @@ def binary_summary(y, p, groups=None, n_boot: int = 2000, seed: int = 0) -> dict
 
 
 def paper_grading_metrics(pred: pd.DataFrame, gold: pd.DataFrame) -> dict:
-    """Grade accuracy computed exactly like the dataset authors' script
-    (calculate_model_metrics.py), so numbers compare with their Table 2.
+    """Grading metrics computed like the dataset authors' calculate_model_metrics.py,
+    so the numbers compare directly with their Table 2.
 
-    pred, gold: columns file, exp, icm, te with dataset codes; gold NaN means
-    'not assessable'. ICM and TE are only scored when neither the prediction
-    nor the consensus puts the embryo at expansion grade 1-2 (codes 0-1).
+    pred and gold have columns file, exp, icm, te in dataset codes (NaN in gold
+    means not assessable). ICM and TE are only scored when neither side puts the
+    embryo at expansion grade 1-2.
     """
     m = gold.merge(pred, on="file", suffixes=("_gt", ""))
 

@@ -1,13 +1,12 @@
 function [frames, hours] = loadVideo(videoId, frameTable, options)
 %LOADVIDEO Read one time-lapse video as a grayscale image stack.
-%   [frames, hours] = classical.loadVideo(videoId, frameTable) reads every
-%   frame listed for videoId in frameTable (data/processed/timelapse/
-%   frames.csv) and returns an H-by-W-by-T uint8 stack plus the hours after
-%   fertilization of each frame. A missing or unreadable frame repeats the
-%   previous one, and every frame is resized to the first one's size.
+%   [frames, hours] = classical.loadVideo(videoId, frameTable) returns every
+%   frame listed for videoId in frameTable as an H-by-W-by-T uint8 stack,
+%   plus each frame's hours after fertilization. A missing or unreadable
+%   frame repeats the previous one.
 %
 %   Options:
-%     Scale  resize factor applied to every frame (default 1)
+%     Scale  resize factor for every frame (default 1)
 
 arguments
     videoId (1,1) string

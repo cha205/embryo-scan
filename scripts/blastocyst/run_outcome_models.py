@@ -1,9 +1,7 @@
-"""Does the embryo photo help predict live birth? Image-based models vs the
-baselines, with the same patient-level 5-fold CV on the dev set.
+"""Compare image-based live-birth models with the baselines, using patient-level 5-fold CV on the dev set.
 
-Image inputs come from the grading model (scripts/blastocyst/train_grader.py):
-  AI grade      its 11 grade probabilities (expansion 1-5, ICM A-C, TE A-C)
-  AI embedding  its 768-number internal description of the photo, PCA-compressed
+Image inputs come from the grading model: its 11 grade probabilities ("AI grade")
+and its 768-d image embedding compressed with PCA ("AI embedding").
 
 Usage: python scripts/blastocyst/run_outcome_models.py [--target lb] [--run grader-convnext-tiny]
 """

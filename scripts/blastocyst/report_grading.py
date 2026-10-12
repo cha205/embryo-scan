@@ -1,6 +1,6 @@
-"""Write reports/blastocyst/grading.md: the grading model vs individual experts
-and the paper's published models on the 300-image gold test set, plus the
-figure reports/figures/blastocyst-grading-vs-experts.png.
+"""Compare the grading model with individual experts and published models on the gold test set.
+
+Writes reports/blastocyst/grading.md and reports/figures/blastocyst-grading-vs-experts.png.
 
 Usage: python scripts/blastocyst/report_grading.py [--run grader-convnext-tiny]
 """

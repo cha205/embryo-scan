@@ -1,8 +1,7 @@
-"""Batched data augmentation on the GPU, shared by the photo and video models.
+"""GPU-side augmentation shared by the photo and video models.
 
-Training sets live on the GPU as uint8 and are augmented there, a batch at a
-time, so there are no DataLoader worker processes (each would load its own
-copy of PyTorch, which a 16 GB Windows machine can't afford).
+Training sets stay on the GPU as uint8 and are augmented a batch at a time,
+which avoids DataLoader worker processes (each loads its own copy of PyTorch).
 """
 
 from __future__ import annotations
@@ -18,21 +17,19 @@ STD = (0.229, 0.224, 0.225)
 
 
 def to_net(x: torch.Tensor) -> torch.Tensor:
-    """(B, 1 or 3, H, W) float in [0, 1] -> (B, 3, H, W) ImageNet-normalised.
-    Grayscale input is repeated across the 3 channels."""
+    """(B, 1 or 3, H, W) floats in [0, 1] to ImageNet-normalized (B, 3, H, W)."""
     mean = torch.tensor(MEAN, device=x.device).view(1, 3, 1, 1)
     std = torch.tensor(STD, device=x.device).view(1, 3, 1, 1)
     return (x.expand(-1, 3, -1, -1) - mean) / std
 
 
 def gpu_augment(x: torch.Tensor, background: float | None) -> torch.Tensor:
-    """Random rotation (any angle), flip, zoom, shift, brightness, contrast and
-    blur, drawn independently for every image in the batch (all channels of an
-    image share the same geometry, so stacked video frames stay aligned).
-    Embryos have no natural "up", so every rotation is a valid new example.
+    """Random rotation, flip, zoom, shift, brightness, contrast and blur per image.
 
-    x: (B, C, H, W) uint8 -> (B, C, H, W) float in [0, 1]
-    background: fill for rotated-in corners; None uses each image's mean.
+    Embryos have no natural orientation, so any rotation is valid. All channels of
+    an image get the same transform, which keeps stacked video frames aligned.
+    x is (B, C, H, W) uint8; returns floats in [0, 1]. `background` fills the
+    corners that rotate in (None uses each image's mean).
     """
     B, _, H, W = x.shape
     dev = x.device
@@ -46,8 +43,8 @@ def gpu_augment(x: torch.Tensor, background: float | None) -> torch.Tensor:
     flip = torch.where(torch.rand(B, device=dev) < 0.5, -1.0, 1.0)
     zoom = uniform(0.87, 1.15)
     c, s = ang.cos() / zoom, ang.sin() / zoom
-    # affine_grid works in [-1, 1] coordinates; rescale so rotation is in
-    # pixel space and a non-square image doesn't get sheared.
+    # affine_grid works in [-1, 1] coordinates, so scale by the aspect ratio to
+    # rotate in pixel space without shearing non-square images.
     theta = torch.zeros(B, 2, 3, device=dev)
     theta[:, 0, 0] = c * flip
     theta[:, 0, 1] = -s * H / W

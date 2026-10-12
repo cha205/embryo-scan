@@ -21,4 +21,4 @@ def test_other_shapes_are_cropped_not_stretched():
     rows, cols = np.flatnonzero(out.any(1)), np.flatnonzero(out.any(0))
     assert out.shape == (288, 384)
     assert abs(np.ptp(rows) - np.ptp(cols)) <= 2  # still round
-    assert abs(rows.mean() - 143.5) <= 2 and abs(cols.mean() - 191.5) <= 2  # still centred
+    assert abs(rows.mean() - 143.5) <= 2 and abs(cols.mean() - 191.5) <= 2  # still centered

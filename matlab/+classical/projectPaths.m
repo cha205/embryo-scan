@@ -1,8 +1,6 @@
 function p = projectPaths()
-%PROJECTPATHS Locations of the data and outputs used by the MATLAB code.
-%   p = classical.projectPaths() mirrors embryoscan/paths.py, so MATLAB and
-%   Python read the same files. Set the EMBRYOSCAN_DATA environment
-%   variable to keep the data folder somewhere else.
+%PROJECTPATHS Data and output locations, matching embryoscan/paths.py.
+%   Set the EMBRYOSCAN_DATA environment variable to use another data folder.
 
 root = fileparts(fileparts(fileparts(mfilename("fullpath"))));
 dataDir = string(getenv("EMBRYOSCAN_DATA"));

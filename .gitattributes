@@ -1,4 +1,3 @@
-# Normalize line endings for text; never diff or convert binary assets
 * text=auto
 *.jpg binary
 *.png binary

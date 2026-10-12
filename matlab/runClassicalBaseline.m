@@ -1,22 +1,16 @@
 function runClassicalBaseline(options)
 %RUNCLASSICALBASELINE Time cell divisions with classical image processing.
-%   runClassicalBaseline() times the first divisions (t2 to t5) in every
-%   held-out test video without any machine learning, saves the per-video
-%   results, then scores them against the embryologist's annotations and
-%   the deep model on the same videos (reportClassicalBaseline). Per video:
-%
-%     1. classical.findEmbryo       circular Hough transform on the first frames
-%     2. classical.motionEnergy     frame-to-frame change inside the embryo
-%     3. classical.detectDivisions  motion spikes + rules from embryology
-%
-%   Writes divisions-<split>.csv, energy-<split>.csv and run-<split>.log to
-%   runs/timelapse/classical-matlab/. Positions and sizes are in pixels of
-%   the original 500 x 500 frames.
+%   runClassicalBaseline() finds t2 to t5 in every held-out test video without
+%   machine learning, saves the results to runs/timelapse/classical-matlab/
+%   and calls reportClassicalBaseline. For each video it locates the embryo
+%   (classical.findEmbryo), measures frame-to-frame change inside it
+%   (classical.motionEnergy) and turns motion spikes into division times
+%   (classical.detectDivisions). Positions and sizes are in pixels of the
+%   original 500 x 500 frames.
 %
 %   Options:
 %     Split  "test" (default) or "val"
-%     Limit  only the first N videos, for a quick check; the report is
-%            left unchanged (default: all videos)
+%     Limit  only the first N videos, without updating the report
 %
 %   Example, from the repository root:
 %     addpath("matlab"); runClassicalBaseline(Limit=3)

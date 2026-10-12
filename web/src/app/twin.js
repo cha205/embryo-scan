@@ -1,11 +1,9 @@
-// "Digital twin" of one embryo's first days: cells divide one at a time, at the
-// division times detected in a real time-lapse video (t2, t3, t4 ... t8, then
-// the 8 -> 16 -> 32 rounds before the morula).
+// Digital twin of an embryo's first days: cells divide one at a time at the
+// division times detected in a video (t2 ... t8, then the 16- and 32-cell rounds).
 //
-// The physics (cells pushing each other apart inside the shell) depends on
-// history, so it is simulated once, forward, on a fixed time grid. Any time t
-// is then an interpolation between two snapshots, which keeps scrubbing the
-// timeline backwards and forwards smooth and deterministic.
+// Cells pushing each other apart depends on history, so the simulation runs once
+// forward on a fixed time grid and any time t interpolates between snapshots.
+// That keeps scrubbing the timeline in either direction smooth and deterministic.
 import * as THREE from 'three'
 import { rng } from '../shared/embryo.js'
 

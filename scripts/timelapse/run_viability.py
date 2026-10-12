@@ -1,10 +1,9 @@
-"""Rank embryos by viability (blastocyst by day 5) from day 0-3 division timings.
+"""Rank embryos by viability (blastocyst by day 5) from their day 0-3 division timings.
 
-Two ranking methods: the published Meseguer 2011 categories (no training) and a
-logistic regression trained on train+val videos. Both are tested on held-out
-patients' videos twice: with the embryologist's annotated timings, and end to
-end with the timings the stage model detected from the frames (day 0-3 only).
-Writes reports/timelapse/viability.md and reports/figures/timelapse-viability-roc.png.
+Compares the published Meseguer 2011 categories with a logistic regression
+trained on train+val videos, using the embryologist's timings and, end to end,
+the timings the stage model detected. Writes reports/timelapse/viability.md and
+reports/figures/timelapse-viability-roc.png.
 
 Usage: python scripts/timelapse/run_viability.py [--run stages-resnet34]
 """

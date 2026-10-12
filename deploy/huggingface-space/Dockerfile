@@ -1,6 +1,6 @@
-# Hugging Face Space (Docker, free CPU) that serves the Embryo Scan photo grader.
-# It builds from the public GitHub repo and downloads the trained weights from a
-# Hugging Face model repo; see docs/deploy.md.
+# Hugging Face Space serving the photo grader on a free CPU. It builds from the
+# public GitHub repo and downloads the trained weights from a Hugging Face model
+# repo (see deploy/README.md).
 FROM python:3.12-slim
 
 ARG GITHUB_REPO=https://github.com/cha205/embryo-scan.git

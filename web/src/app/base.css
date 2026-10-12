@@ -45,7 +45,7 @@ button { font: inherit; cursor: pointer; }
 .callout span { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 2px; }
 .callout.accent { color: var(--cobalt); }
 
-/* phones: the 3D lab is laid out for bigger screens, so it says so first (shared/small-screen.js) */
+/* small-screen notice, see shared/small-screen.js */
 .small-screen { display: none; }
 @media (max-width: 760px) {
   .small-screen:not([hidden]) { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(232, 235, 240, 0.88); backdrop-filter: blur(12px); }

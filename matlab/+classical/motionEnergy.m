@@ -1,13 +1,10 @@
 function energy = motionEnergy(frames, center, radius)
-%MOTIONENERGY How much the embryo changes from one frame to the next.
-%   energy = classical.motionEnergy(frames, center, radius) returns, for
-%   every frame, the mean absolute difference from the previous frame
-%   inside the embryo, after light smoothing and brightness matching. It is
-%   expressed in units of the video's typical frame-to-frame noise (a
-%   robust z-score), so a value of 5 is an unusually large change.
-%
-%   Cell divisions show up as spikes: a round cell turning into two
-%   changes many pixels at once, while cells sitting still barely change.
+%MOTIONENERGY Frame-to-frame change inside the embryo.
+%   energy = classical.motionEnergy(frames, center, radius) returns, for each
+%   frame, the mean absolute difference from the previous frame inside the
+%   embryo after light smoothing and brightness matching, as a robust z-score
+%   against the video's typical change. Divisions show up as spikes because a
+%   cell splitting in two changes many pixels at once.
 
 arguments
     frames (:, :, :) uint8

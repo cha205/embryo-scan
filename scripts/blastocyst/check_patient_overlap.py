@@ -1,15 +1,9 @@
-"""Check whether patient overlap inflates the grading results.
+"""Check whether patients shared between the grading train and test sets inflate accuracy.
 
-The gold test set was drawn by image, not by patient, so 30% of the training
-pool comes from patients who also have a gold test image. This compares three
-5-fold ensembles on the gold set:
-
-- the reported model, trained on the whole pool,
-- the same model trained without any gold patient's images,
-- a size-matched control that drops the same number of random images instead.
-
-If overlap inflated the results, the model without gold patients would score
-clearly below the size-matched control. Writes
+The gold test set was drawn by image, so 30% of training images come from
+patients who also have a test image. On the gold set, this compares the reported
+5-fold ensemble with one trained without those patients and with a size-matched
+control that drops the same number of random images. Writes
 reports/blastocyst/patient-overlap-check.md.
 
 Usage: python scripts/blastocyst/check_patient_overlap.py

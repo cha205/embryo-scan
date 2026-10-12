@@ -7,30 +7,28 @@ __pycache__/
 .ruff_cache/
 .ipynb_checkpoints/
 
-# Data and model outputs (rebuild with the scripts; see README)
+# Datasets and trained models (rebuilt by the scripts)
 data/
 runs/
 *.pt
 *.ckpt
 *.onnx
 
-# MATLAB autosaves and compiled files
+# MATLAB
 *.asv
 *.mex*
-matlab/output/
 
-# Caches (uv, Hugging Face)
+# Tool caches
 .cache/
 
 # Web
 web/node_modules/
 web/dist/
 
-# Quick experiments: anything goes in scratch/, nothing in it is committed
+# Local experiments
 scratch/
 
-
-# OS / editor
+# OS and editors
 .DS_Store
 Thumbs.db
 .vscode/

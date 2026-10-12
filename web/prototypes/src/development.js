@@ -1,10 +1,9 @@
-// Day 0-4 of embryo development as a deterministic function of time, so the
-// timeline can be scrubbed backwards and forwards.
+// Days 0-4 of development as a deterministic function of time, so the timeline
+// can be scrubbed in both directions.
 //
-// The cells divide without growing (each division halves cell volume), so a
-// lineage tree is precomputed: every depth d has 2^d cells whose resting
-// positions come from a small physics relaxation inside the zona. At any time
-// t, each cell is interpolated from its parent's position to its own.
+// Cells divide without growing, so the lineage tree is precomputed: depth d has
+// 2^d cells whose resting positions come from a small physics relaxation inside
+// the zona. At time t each cell is interpolated from its parent's position to its own.
 import * as THREE from 'three'
 import { rng } from '../../src/shared/embryo.js'
 
@@ -84,7 +83,7 @@ export const STAGES = [
     text: 'Embryologists check that the cells divide on time and come out roughly equal in size.' },
   { t: 2.3, day: 'Day 3', name: 'Eight cells', cells: '8 cells',
     text: 'Eight cells. Around now the embryo switches on its own genes instead of running on the egg\'s supplies.' },
-  { t: 3.4, day: 'Day 4', name: 'Morula', cells: '16–32 cells',
+  { t: 3.4, day: 'Day 4', name: 'Morula', cells: '16-32 cells',
     text: 'The cells pull tightly together into a solid ball. Morula is Latin for mulberry.' },
   { t: 4.6, day: 'Day 5', name: 'Blastocyst', cells: '~120 cells',
     text: 'A fluid-filled ball with two kinds of cells: the outer layer becomes the placenta, the inner cluster becomes the baby. This is the stage Embryo Scan grades.' },

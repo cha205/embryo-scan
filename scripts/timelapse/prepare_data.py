@@ -1,17 +1,11 @@
-"""Turn the 311k time-lapse frames into one compact array for training.
+"""Cache all 311k time-lapse frames as one array for training.
 
-For each video: find the embryo (the most textured region inside the well,
-averaged over a dozen frames), crop 288x288 around it, shrink to 160x160, and
-write every frame into data/processed/timelapse/frames_u8_160.npy. Reading one
-big file sequentially is far faster than 311k small JPEGs on a hard drive.
-
-On a hard drive, *how* the JPEGs are read matters most: parallel readers make
-the disk seek constantly (~100 files/s). One reader going through the files
-in creation order (the order they were unpacked, so roughly their order on
-disk) manages ~1,000 files/s, while a thread pool decodes JPEGs in parallel.
-
-Also writes data/processed/timelapse/frames.csv (one row per frame) and the
-patient-level video split splits/timelapse-videos.csv.
+Each video is cropped around the embryo (the most textured region, averaged over
+a dozen frames) and every frame is shrunk to 160x160 into
+data/processed/timelapse/frames_u8_160.npy. One reader goes through the JPEGs in
+creation order while a thread pool decodes them, which on a hard drive is about
+10x faster than parallel readers. Also writes frames.csv and the patient-level
+split splits/timelapse-videos.csv.
 
 Usage: python scripts/timelapse/prepare_data.py [--threads 5]
 """

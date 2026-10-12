@@ -1,5 +1,4 @@
-"""Train the development-stage model on time-lapse videos, then detect division
-times on held-out videos and measure how far off they are (in hours).
+"""Train the development-stage model and measure its division-timing error on held-out videos.
 
 Usage:
   python scripts/timelapse/train_stages.py                         # train + evaluate on val

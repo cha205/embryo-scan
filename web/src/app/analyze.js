@@ -210,10 +210,9 @@ document.querySelectorAll('#r-seg button').forEach((b) => b.addEventListener('cl
 }))
 
 // ---------------------------------------------------------------- your photo
-// Sent to the grading server (server/main.py), which returns the photo as the
-// model saw it, the grade and a heat map per head, in the same shape as a sample.
-// Locally the server is started by hand; on the public site it's a Hugging Face
-// Space that sleeps when idle, so the page waits for it to wake.
+// The grading server returns the photo as the model saw it, the grade and a heat
+// map per head, in the same shape as a sample. The hosted server sleeps when
+// idle, so the page keeps polling while it wakes up.
 const upload = $('#upload')
 const input = upload.querySelector('input')
 const note = $('#upload-note')

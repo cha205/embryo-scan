@@ -1,10 +1,8 @@
 function frameTable = readFrameTable()
-%READFRAMETABLE One row per video frame, from the prepared time-lapse data.
-%   frameTable = classical.readFrameTable() reads data/processed/timelapse/
-%   frames.csv (written by scripts/timelapse/prepare_data.py) with columns
+%READFRAMETABLE Frame table written by scripts/timelapse/prepare_data.py.
+%   frameTable = classical.readFrameTable() returns one row per frame with
 %   video, frame (1-based), hours after fertilization and phase (index into
-%   PHASES in embryoscan/timelapse/labels.py, or -1 before the first
-%   annotation).
+%   PHASES in embryoscan/timelapse/labels.py, or -1 before annotations start).
 
 p = classical.projectPaths();
 opts = detectImportOptions(p.frameTable, "TextType", "string");

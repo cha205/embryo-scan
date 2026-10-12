@@ -1,5 +1,5 @@
-// Direction B: "Exhibit" — a bright science-museum piece. A glass embryo on a
-// plinth develops from one cell to a blastocyst as you scrub the timeline.
+// Design prototype B ("Exhibit"): a glass embryo on a plinth that develops from
+// one cell to a blastocyst as you scrub the timeline.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'

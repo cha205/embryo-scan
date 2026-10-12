@@ -1,12 +1,8 @@
-"""Experiment: fine-tune the whole grading network on live birth, end to end.
+"""Fine-tune the whole grading network on live birth (experiment).
 
-Compared with scripts/blastocyst/run_outcome_models.py (which keeps the grading
-network frozen and fits a small model on its outputs), this lets the network
-change what it looks at. With only ~480 training embryos per fold it may just
-overfit, which is the question. The grade heads keep training on the
-embryologist's grades as a side task, so the network doesn't forget anatomy.
-
-Same patient-level 5-fold CV on the dev set as every other outcome model.
+Unlike run_outcome_models.py, which keeps the grading network frozen, this lets
+it change what it looks at. The grade heads keep training on the embryologist's
+grades as a side task. Uses the same patient-level 5-fold CV on the dev set.
 
 Usage: python scripts/blastocyst/finetune_outcome.py [--epochs 12] [--init-fold 0]
 """

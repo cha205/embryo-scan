@@ -1,13 +1,9 @@
 """Viability ranking from the first 3 days of division timings.
 
-Outcome: did the embryo form a blastocyst (reach tB) by day 5 (116 h)? Only
-videos recorded for at least 116 h count, so a video that simply stopped early
-(e.g. a day-3 transfer) isn't mistaken for an embryo that stalled. Blastocyst
-formation is the standard viability proxy in time-lapse research; embryos that
-stall can't be transferred at day 5.
-
-Features use only what's known by day 3 (72 h): t2 ... t8 and the derived cc2
-(2nd cell-cycle length), s2 (2nd division synchrony) and direct cleavage.
+The outcome is whether the embryo reached the blastocyst stage (tB) by day 5
+(116 h). Only videos recorded that long count, so a recording that stopped
+early isn't mistaken for an embryo that stalled. Features only use what is
+known by day 3 (72 h).
 """
 
 from __future__ import annotations

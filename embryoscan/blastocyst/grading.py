@@ -1,14 +1,8 @@
-"""Gardner grading model: one pretrained image backbone with three heads.
+"""Gardner grading model: a pretrained backbone with three heads.
 
-  expansion        5 classes (Gardner grade 1-5)
-  inner cell mass  3 classes (A/B/C), only learned for expansion grade >= 3
-  trophectoderm    3 classes (A/B/C), only learned for expansion grade >= 3
-
-Below expansion grade 3 the inner cell mass and trophectoderm aren't gradable,
-so their prediction is reported as "not defined", same as the experts do.
-
-The whole training set (about 150 MB as uint8) lives on the GPU and is
-augmented there in batches (embryoscan.common.augment).
+The heads predict expansion (grade 1-5), inner cell mass (A-C) and
+trophectoderm (A-C). Like the experts, the model only grades inner cell mass
+and trophectoderm from expansion grade 3 up.
 """
 
 from __future__ import annotations
@@ -27,17 +21,17 @@ import torch.nn.functional as F
 from .. import paths
 from ..common.augment import dihedral_views, gpu_augment, to_net
 
-os.environ.setdefault("HF_HOME", str(paths.CACHE / "huggingface"))  # keep model downloads off C:
-import timm  # noqa: E402  (after HF_HOME)
+os.environ.setdefault("HF_HOME", str(paths.CACHE / "huggingface"))  # must be set before timm is imported
+import timm  # noqa: E402
 
 DEFAULT_RUN = "grader-convnext-tiny"
 IMAGE_HW = (288, 384)
-BACKGROUND = 136 / 255  # median border gray level of the photos, fills rotated-in corners
+BACKGROUND = 136 / 255  # median border gray of the photos, fills rotated-in corners
 HEADS = {"exp": 5, "icm": 3, "te": 3}
 
 
 class ImageBank:
-    """Every cached image in memory (2,344 x 288 x 384 uint8 = 259 MB)."""
+    """All cached images in memory (2,344 x 288 x 384 uint8, 259 MB)."""
 
     def __init__(self):
         self.arr = np.load(paths.BLASTOCYST_IMAGES)
@@ -65,8 +59,8 @@ class Grader(nn.Module):
 
 
 def class_weights(labels: np.ndarray, n: int) -> torch.Tensor:
-    """Square-root inverse-frequency weights, mean 1. Grade C is rare (16 of
-    1,697 ICM labels), so without this the model would never predict it."""
+    """Square-root inverse-frequency weights with mean 1. Grade C is rare
+    (16 of 1,697 ICM labels) and is otherwise never predicted."""
     counts = np.bincount(labels[(labels >= 0) & (labels < n)], minlength=n).astype(float)
     w = 1 / np.sqrt(np.maximum(counts, 1))
     return torch.tensor(w / w.mean(), dtype=torch.float32)
@@ -76,7 +70,7 @@ def grade_loss(out: dict, y: torch.Tensor, w_icm: torch.Tensor, w_te: torch.Tens
     loss = F.cross_entropy(out["exp"].float(), y[:, 0], label_smoothing=smoothing)
     for k, col, w in (("icm", 1, w_icm), ("te", 2, w_te)):
         t = y[:, col]
-        m = (t >= 0) & (t <= 2)  # 3 = not defined (expansion grade 1-2): no ICM/TE target
+        m = (t >= 0) & (t <= 2)  # 3 means not graded
         if m.any():
             loss = loss + F.cross_entropy(out[k][m].float(), t[m], weight=w, label_smoothing=smoothing)
     return loss
@@ -101,8 +95,8 @@ def train(
     log=print,
     monitor: tuple[list[str], np.ndarray] | None = None,
 ) -> nn.Module:
-    """Train for a fixed number of epochs and return the EMA (weight-averaged)
-    model. No early stopping, so held-out folds stay truly unseen."""
+    """Train for a fixed number of epochs and return the EMA model. There's no
+    early stopping, so the held-out fold never influences training."""
     torch.manual_seed(cfg.seed)
     dev = torch.device("cuda")
     torch.backends.cudnn.benchmark = True
@@ -157,7 +151,8 @@ def train(
 def predict(
     model: nn.Module, files: list[str], bank: ImageBank, tta: bool = True, batch: int = 32
 ) -> tuple[pd.DataFrame, np.ndarray]:
-    """Class probabilities (averaged over 8 views) and pooled image features."""
+    """Class probabilities and pooled image features, averaged over the 8
+    rotations/flips when tta is on."""
     dev = next(model.parameters()).device
     model.eval()
     probs = {k: [] for k in HEADS}
@@ -185,8 +180,8 @@ def predict(
 
 
 def decode(df: pd.DataFrame) -> pd.DataFrame:
-    """Turn probability columns into grade codes (ICM/TE = 3 'not defined'
-    when the predicted expansion is grade 1-2)."""
+    """Probability columns to grade codes. ICM and TE get code 3 (not graded)
+    when the predicted expansion is grade 1-2."""
     df = df.copy()
     df["exp"] = df[[f"p_exp{c}" for c in range(5)]].to_numpy().argmax(1)
     early = df["exp"] <= 1

@@ -1,19 +1,16 @@
-"""Load and clean the Kromp et al. 2023 human blastocyst dataset.
+"""Load and clean the Kromp et al. 2023 blastocyst dataset.
 
-The raw files need four fixes before they can be trusted:
+Problems in the raw files:
+- Image names are zero-padded inconsistently ("187_1.png" in a CSV, "187_01.png"
+  on disk), so rows are matched on the (patient, embryo) pair.
+- A German-locale spreadsheet turned AMH and endometrium values into dates
+  ("1.4" became "01.Apr", "1.26" became "Jän.26"); see decode_amh().
+- Some egg counts are written as sums ("10+1").
+- 838_02.png is listed twice with conflicting silver grades.
 
-1. Image names are zero-padded inconsistently ("187_1.png" in a CSV, "187_01.png"
-   on disk, "0001_01.png" for early patients). Everything is matched on the
-   (patient, embryo) integer pair instead of the string.
-2. AMH and endometrium values were auto-converted to dates by a German-locale
-   spreadsheet: "1.4" became "01.Apr" and "1.26" became "Jän.26".
-   decode_amh() and decode_endo() reverse this (see their docstrings).
-3. Some egg counts are written as sums ("10+1").
-4. One silver-label image (838_02.png) is listed twice with conflicting grades.
-
-Grade codes follow the paper: expansion 0-4 means Gardner grade 1-5; inner cell
-mass (ICM) and trophectoderm (TE) 0/1/2 mean A/B/C, and 3 means "not defined"
-(ICM and TE are only graded once the embryo reaches expansion grade 3).
+Grade codes follow the paper: expansion 0-4 is Gardner grade 1-5, and inner cell
+mass (ICM) and trophectoderm (TE) 0-2 are A-C. Code 3 means not graded, which
+applies below expansion grade 3.
 """
 
 from __future__ import annotations
@@ -80,17 +77,15 @@ class Decoded:
 
 
 def decode_amh(raw: str) -> Decoded:
-    """Undo spreadsheet date conversion of AMH values (ng/ml, 2 decimals).
+    """Undo the spreadsheet's date conversion of AMH values (ng/ml, 2 decimals).
 
-    The source had 2-decimal values with trailing zeros dropped, so:
-      "1.26" -> month 26 is invalid -> read as Jan 1926 -> "Jän.26"  => 1 + 26/100
-      "1.4"  -> 1 April                                -> "01.Apr"  => 1.4
-      "1.04" -> also 1 April                           -> "01.Apr"  => 1.04
-      "2.11" -> 2 November                             -> "02.Nov"  => 2.11
-    "DD.Mon" with month 1-9 is therefore ambiguous between D.M and D.0M; the
-    estimate is the midpoint and lo/hi keep both readings for sensitivity checks.
-    Evidence for the trailing-zero rule: no "Okt" (month 10) dates and no
-    "Mon.YY" with YY in 20, 30, ... 90 occur anywhere in the file.
+    Trailing zeros were dropped before the conversion, so:
+      "1.26" -> month 26 is invalid, read as Jan 1926 -> "Jän.26" => 1.26
+      "1.4"  -> 1 April                              -> "01.Apr" => 1.4
+      "1.04" -> also 1 April                         -> "01.Apr" => 1.04
+    "DD.Mon" with month 1-9 is ambiguous between D.M and D.0M, so value is the
+    midpoint and lo/hi keep both readings. The file has no "Okt" dates and no
+    "Mon.YY" with YY a multiple of 10, which is what dropped zeros would produce.
     """
     s = str(raw).strip()
     if s == "" or s.lower() == "nan":

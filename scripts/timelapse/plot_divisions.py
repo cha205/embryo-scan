@@ -1,10 +1,8 @@
-"""Draw the division-timing figures from the stage model's saved predictions.
+"""Plot division timing from the stage model's saved predictions.
 
-- reports/figures/timelapse-stage-timeline.png: one held-out embryo's stage over
-  five days: the embryologist's labels, the model frame by frame, and the model
-  after the never-go-backwards decoding.
-- reports/figures/timelapse-timing-errors.png: detected minus annotated time of
-  every division, across all videos of the split.
+Writes reports/figures/timelapse-stage-timeline.png (one held-out embryo's stage
+over five days, labelled and predicted) and timelapse-timing-errors.png (the
+timing error of every division across the split).
 
 Usage: python scripts/timelapse/plot_divisions.py [--run stages-resnet34] [--split test]
 """

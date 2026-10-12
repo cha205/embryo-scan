@@ -1,6 +1,6 @@
-// Direction C: "Attention relief" — real microscope photos laid out like slides
-// on a light table. Where the AI looked rises off each photo as a glowing 3D
-// terrain (Grad-CAM), and a column of light shows the success estimate.
+// Design prototype C ("Attention relief"): real microscope photos laid out like
+// slides on a light table. The grading model's attention (Grad-CAM) rises off each
+// photo as 3D terrain, and a column of light shows the success estimate.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
@@ -8,7 +8,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 
-const DEMO_PROBS = [0.41, 0.24, 0.12] // placeholder until the outcome model exists
+const DEMO_PROBS = [0.41, 0.24, 0.12] // placeholder success estimates
 const NAMES = ['Embryo A', 'Embryo B', 'Embryo C']
 const W = 2.4
 const H = 1.8

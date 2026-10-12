@@ -1,16 +1,10 @@
 function reportClassicalBaseline(options)
-%REPORTCLASSICALBASELINE Score the classical baseline and draw its figures.
-%   reportClassicalBaseline() reads the per-video results saved by
-%   runClassicalBaseline and compares the classical division times with the
-%   embryologist's and the deep model's on the same videos. Writes
-%   reports/timelapse/classical-baseline-<split>.md and, for the test
-%   split, two figures in reports/figures/:
-%
-%     timelapse-classical-motion-energy.png  one typical video, step by step
-%     timelapse-classical-vs-deep.png        divisions timed within 1 h
-%
-%   The deep model's numbers are recomputed from its saved predictions with
-%   the same rules, so both methods are scored identically.
+%REPORTCLASSICALBASELINE Score the classical baseline and plot its figures.
+%   reportClassicalBaseline() compares the division times saved by
+%   runClassicalBaseline with the embryologist's and the deep model's, scoring
+%   both methods with the same rules. Writes
+%   reports/timelapse/classical-baseline-<split>.md and, for the test split,
+%   the reports/figures/timelapse-classical-*.png figures.
 
 arguments
     options.Split (1, 1) string {mustBeMember(options.Split, ["val", "test"])} = "test"
@@ -42,9 +36,9 @@ end
 %% Scoring
 
 function score = scoreTimings(results)
-%SCORETIMINGS Timing error of each method per division, against the
-%   embryologist. A division a method missed counts as a miss in the
-%   within-1 h and within-2 h rates; median errors are over those it found.
+%SCORETIMINGS Timing error per division for each method against the embryologist.
+%   A missed division counts against the within-1 h and within-2 h rates; median
+%   errors only cover divisions that were found.
 phases = ["t2", "t3", "t4", "t5"];
 rows = cell(numel(phases), 1);
 for k = 1:numel(phases)
@@ -237,7 +231,7 @@ close(fig);
 end
 
 function styleAxes(ax)
-%STYLEAXES Quiet axis styling shared by the report figures.
+%STYLEAXES Axis styling shared by the report figures.
 c = palette();
 set(ax, "FontSize", 11, "TickDir", "out", "Box", "off", "LineWidth", 0.75, ...
     "XColor", c.muted, "YColor", c.muted, "TitleHorizontalAlignment", "left");
@@ -249,9 +243,7 @@ ax.GridAlpha = 0.12;
 end
 
 function c = palette()
-%PALETTE The web app's colours, used by every report figure (see
-%   embryoscan/common/figures.py): amber for the classical pipeline, cobalt
-%   for the deep model, ink for the embryologist and text.
+%PALETTE Figure colors, shared with embryoscan/common/figures.py.
 c.classical = [232, 137, 12] / 255;
 c.deep = [47, 91, 255] / 255;
 c.ink = [13, 20, 36] / 255;

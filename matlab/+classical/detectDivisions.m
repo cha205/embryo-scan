@@ -1,19 +1,18 @@
 function t = detectDivisions(energy, hours)
 %DETECTDIVISIONS Estimate t2, t3, t4 and t5 from motion-energy spikes.
 %   t = classical.detectDivisions(energy, hours) returns a struct with the
-%   hour of each division (NaN when no matching spike is found). The rules
-%   encode known embryology instead of anything learned from data:
+%   hour of each division, or NaN when no matching spike is found. The rules
+%   come from typical embryo timing, not from training data:
 %
-%     t2  the strongest spike between 18 and 38 h (the first cleavage)
+%     t2  the strongest spike between 18 and 38 h
 %     t3  the first spike 5 to 18 h after t2
-%     t4  the next spike within 4 h of t3; none means both cells divided
-%         together, so t4 = t3
+%     t4  the next spike within 4 h of t3, or t3 itself if there is none
+%         (both cells divided together)
 %     t5  the first spike 6 to 20 h after t4
 %
-%   Spikes are local maxima of the 3-frame moving average that stand out by
-%   at least 1.5 noise units and are at least 0.5 h apart. (The separation
-%   is converted to frames because the video timestamps are rounded to
-%   0.1 h, so neighbouring frames can share one.)
+%   Spikes are local maxima of the 3-frame moving average with a prominence
+%   of at least 1.5, at least 0.5 h apart. The gap is set in frames because
+%   timestamps are rounded to 0.1 h and can repeat.
 
 arguments
     energy (:, 1) double

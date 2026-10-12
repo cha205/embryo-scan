@@ -1,16 +1,16 @@
-"""Embryo Scan demo server: grades uploaded embryo photos and serves the web app.
+"""Grades uploaded embryo photos and serves the built web app.
 
 Run from the project root:
   uvicorn server.main:app --port 8000
 
-On a GPU every photo is graded with all 8 rotations/flips, as in the
-evaluation. On a CPU (e.g. a free Hugging Face Space) it uses 2 views for the
-grade and 1 per heat map, which takes ~3 s instead of ~20 s on two cores.
+On a GPU each photo is graded over all 8 rotations/flips, as in the evaluation.
+On a CPU it uses 2 views for the grade and 1 per heat map, about 5 s instead of
+20 s on two cores.
 
 Environment variables:
-  ALLOWED_ORIGINS    comma-separated origins of a web app hosted on another
-                     domain, e.g. https://embryo-scan.vercel.app
-  EMBRYOSCAN_DEVICE  "cpu" to leave the GPU alone (e.g. while it's training)
+  ALLOWED_ORIGINS    comma-separated origins allowed to call the API from
+                     another domain, e.g. https://embryo-scan.vercel.app
+  EMBRYOSCAN_DEVICE  "cpu" to keep the GPU free
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ MAX_BYTES = 10 * 1024 * 1024
 DEVICE = os.environ.get("EMBRYOSCAN_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
 GRADE_VIEWS, HEATMAP_VIEWS = (8, 8) if DEVICE == "cuda" else (2, 1)
 state: dict = {}
-grading = threading.Lock()  # Grad-CAM hooks into the shared models, so one request at a time
+grading = threading.Lock()  # Grad-CAM registers hooks on the shared models
 
 
 @asynccontextmanager
@@ -77,7 +77,7 @@ def api_grade(file: Annotated[UploadFile, File()]):
         res = grade(models, x, views=GRADE_VIEWS)
         cams = {}
         for head, code in res["codes"].items():
-            cls = code if head == "exp" or code < 3 else 0  # ICM/TE aren't graded early: show class A
+            cls = code if head == "exp" or code < 3 else 0  # ungraded ICM/TE: show class A
             cams[head] = heatmap(models[0], x, head, cls, views=HEATMAP_VIEWS)
     res["photo"] = png_data_url(Image.fromarray(x[0, 0].numpy()))
     res["heatmaps"] = {

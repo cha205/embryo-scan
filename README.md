@@ -1,112 +1,114 @@
 # Embryo Scan
 
-AI that watches 5-day IVF embryo time-lapse videos, detects every cell division, ranks embryos by predicted viability, and grades the resulting blastocyst like an expert embryologist.
+Embryo Scan watches 5-day time-lapse videos of IVF embryos, detects every cell division, and ranks the embryos by how likely they are to develop. It also grades day-5 embryo photos on the scale embryologists use. The web app replays real videos next to a 3D model of the embryo and can grade a photo you upload.
 
 [![CI](https://github.com/cha205/embryo-scan/actions/workflows/ci.yml/badge.svg)](https://github.com/cha205/embryo-scan/actions/workflows/ci.yml)
 
-> Status: models trained and evaluated on held-out patients (every number below is a test-set result). The demo app runs locally (see [Run it](#run-it)); demo GIF and public release next.
+![The development stage of one held-out embryo over five days, from the embryologist's labels and from the model](reports/figures/timelapse-stage-timeline.png)
 
-![The development stage of one held-out embryo, frame by frame, as labelled by the embryologist and by the model](reports/figures/timelapse-stage-timeline.png)
-
-## What it does
-1. **Detects every cell division in a time-lapse video.** A model labels the development stage of every frame (2 cells, 3 cells, ... blastocyst), then a dynamic program finds the most likely sequence that never goes backwards, which gives each division's time in hours.
-2. **Ranks embryos by viability from their first three days.** Division timings up to day 3 predict which embryos will form a blastocyst by day 5, the standard viability proxy in time-lapse research.
-3. **Grades the blastocyst.** A second model grades day-5 photos on the Gardner scale (expansion, inner cell mass, trophectoderm), benchmarked against a panel of embryologists.
-4. **Measures what deep learning adds.** A classical image-processing pipeline in MATLAB, with no machine learning, times the same divisions on the same videos as a baseline.
-5. **Shows its work.** A Three.js app replays a real video next to a 3D "digital twin" that divides at the detected times, and grades any day-5 photo you upload, with heat maps of what the model looked at.
+Every number below comes from patients the models never saw in training.
 
 ## Results
 
-### Division detection
-141 test videos from 108 patients the model never saw, 59k labelled frames:
-- Development stage of each frame: **71.8%** exactly right, **92.8%** within one stage (16 stages), after the never-go-backwards decoding (69.7% before it).
-- Division times vs the embryologist's marks: median error **1.0 h** across all divisions (frames are 15 min apart).
+### Detecting cell divisions
+
+On 141 test videos from 108 patients (59k labelled frames), the model gets the development stage of 71.8% of frames exactly right and 92.8% within one stage. Its division times are off by a median of 1 hour from the embryologist's marks, with frames 15 minutes apart.
 
 | Division | 2 cells | 3 cells | 4 cells | 5 cells | 8 cells | morula | blastocyst |
 |---|---|---|---|---|---|---|---|
 | Median error (h) | 0.2 | 0.3 | 0.5 | 1.0 | 1.7 | 1.7 | 1.1 |
 | Within 2 h | 94% | 84% | 87% | 70% | 56% | 56% | 68% |
 
-Late stages are harder because cells overlap and get hard to count, for people too. Full table: [divisions-test.md](reports/timelapse/divisions-test.md); error spread per division: [figure](reports/figures/timelapse-timing-errors.png).
+Later stages are harder because the cells overlap, which makes them hard to count for embryologists too. Full results are in [divisions-test.md](reports/timelapse/divisions-test.md), with the error spread in [this plot](reports/figures/timelapse-timing-errors.png).
 
 ### Deep learning vs classical image processing
-The classical pipeline finds the embryo with a circular Hough transform, measures how much it changes between frames, and turns motion spikes into division times with rules from embryology. Its rules were checked on validation videos only, then run once on the same 141 test videos and scored the same way:
 
-| Videos timed within 1 h of the embryologist | 2 cells | 3 cells | 4 cells | 5 cells |
+To see what the neural network adds, I also built a version with no machine learning in MATLAB. It finds the embryo with a circular Hough transform, measures how much it changes between frames, and turns motion spikes into division times using typical embryo timing. I checked the rules on the validation videos and ran the same 141 test videos once.
+
+| Videos timed within 1 h | 2 cells | 3 cells | 4 cells | 5 cells |
 |---|---|---|---|---|
-| Classical image processing (MATLAB) | 44% | 34% | 45% | 22% |
-| **Deep model (ResNet-34)** | **92%** | **78%** | **76%** | **57%** |
+| Classical (MATLAB) | 44% | 34% | 45% | 22% |
+| Deep model (ResNet-34) | 92% | 78% | 76% | 57% |
 
-A motion detector also fires when cells shift or the embryo drifts; the network learned what a division itself looks like. Details and figures: [classical-baseline-test.md](reports/timelapse/classical-baseline-test.md), code: [matlab/](matlab).
+A motion detector also fires when cells shift or the embryo drifts, while the network learned what a division looks like. Details: [classical-baseline-test.md](reports/timelapse/classical-baseline-test.md) and [matlab/](matlab).
 
-### Viability ranking from day 0-3 timings
-Will the embryo form a blastocyst by day 5? 97 test videos recorded that long; AUC with 95% CI (0.5 = coin flip):
+### Ranking embryos by viability
+
+From division times up to day 3, the model predicts which embryos reach the blastocyst stage by day 5, the usual viability measure in time-lapse research. On the 97 test videos recorded that long (AUC with a 95% confidence interval, where 0.5 is a coin flip):
 
 | Timings from | Ranking method | AUC |
 |---|---|---|
-| Embryologist's annotations | Published Meseguer 2011 categories (no training) | 0.68 (0.55-0.78) |
-| Embryologist's annotations | Logistic regression on timings | 0.72 (0.61-0.81) |
-| **AI-detected from the raw video (end to end)** | Logistic regression on timings | **0.69** (0.57-0.79) |
-| AI-detected from the raw video | Published Meseguer 2011 categories | 0.61 (0.48-0.73) |
+| Embryologist's annotations | Published Meseguer 2011 categories | 0.68 (0.55-0.78) |
+| Embryologist's annotations | Logistic regression | 0.72 (0.61-0.81) |
+| The model, from raw video | Logistic regression | 0.69 (0.57-0.79) |
+| The model, from raw video | Published Meseguer 2011 categories | 0.61 (0.48-0.73) |
 
-From raw video alone, the AI ranks embryos nearly as well as rankings built on an embryologist's hand annotations. The strongest signals are the length of the second cell cycle (cc2) and direct cleavage (1 -> 3 cells in under 5 h), both known warning signs in the literature. Details: [viability.md](reports/timelapse/viability.md), [ROC curves](reports/figures/timelapse-viability-roc.png).
+Straight from the video, the ranking is almost as good as one built on an embryologist's hand annotations. The strongest signals are the length of the second cell cycle and direct cleavage (1 to 3 cells in under 5 hours), both known warning signs. Details: [viability.md](reports/timelapse/viability.md) and the [ROC curves](reports/figures/timelapse-viability-roc.png).
 
-### Grading vs experts
-300-photo gold test set graded by a panel of embryologists; accuracy:
+### Grading blastocyst photos
+
+Accuracy on 300 photos graded by a panel of embryologists:
 
 | | Expansion | Inner cell mass | Trophectoderm |
 |---|---|---|---|
-| Individual experts (paper) | 0.78 | 0.74 | 0.70 |
+| Individual embryologists (paper) | 0.78 | 0.74 | 0.70 |
 | Best published model (paper) | 0.85 | 0.69 | 0.62 |
-| **Embryo Scan, 5-model ensemble** | **0.853** (0.81-0.89) | **0.714** (0.66-0.77) | **0.660** (0.60-0.72) |
+| Embryo Scan, 5-model ensemble | 0.853 (0.81-0.89) | 0.714 (0.66-0.77) | 0.660 (0.60-0.72) |
 | Embryo Scan, balanced thresholds | 0.853 | 0.697 | 0.672 |
 
-Our evaluation code reproduces the paper's published XCeption numbers exactly (0.78 / 0.69 / 0.62) before scoring our own model. The test set was drawn by image, so 30% of training photos come from test-set patients; retraining without them changes accuracy by less than 0.01 against a size-matched control ([patient-overlap-check.md](reports/blastocyst/patient-overlap-check.md)), so the overlap doesn't inflate these numbers. The model's tendency to call grade-B inner cell masses "A" is inherited from the single embryologist who labeled its training data (they do the same on the test set); its weakness on rare grade-C trophectoderm is its own, and balanced decision thresholds tuned on training data raise grade-C recall from 3/30 to 12/30. Details: [grading.md](reports/blastocyst/grading.md), [figure](reports/figures/blastocyst-grading-vs-experts.png).
+Before scoring my model, I checked that my evaluation code reproduces the paper's published numbers exactly (0.78 / 0.69 / 0.62). The test set was picked by image rather than by patient, so 30% of the training photos come from test patients. Retraining without them changes accuracy by less than 0.01 against a size-matched control, so the overlap isn't inflating these numbers ([patient-overlap-check.md](reports/blastocyst/patient-overlap-check.md)).
 
-### Live birth from a photo + clinical data
-603 transferred embryos with known outcomes, patient-level CV: age alone AUC 0.53, embryologist's grade 0.55, AI grade 0.56, fine-tuned network 0.54. In this clinic's data live birth is barely predictable from any of them, and the project reports that rather than overclaiming. Details: [outcome-live-birth.md](reports/blastocyst/outcome-live-birth.md).
+The model calls too many grade-B inner cell masses "A", but so does the one embryologist who labelled its training data. Rare grade-C trophectoderm is the model's own weak spot; balanced thresholds tuned on the training data raise its recall from 3/30 to 12/30. Details: [grading.md](reports/blastocyst/grading.md).
 
-## Tech stack
-| Area | Tools |
-|---|---|
-| Deep learning | PyTorch (CUDA, mixed precision, GPU-side augmentation), timm (ConvNeXt-Tiny, ResNet-34), Grad-CAM |
-| Classical image processing | MATLAB R2024a with the Image Processing Toolbox (Hough transform, filtering, peak detection) |
-| Data and statistics | pandas, NumPy, SciPy, scikit-learn, LightGBM; patient-level splits and bootstrap confidence intervals |
-| Images, video and figures | OpenCV (WebM export), Pillow, matplotlib, Jupyter |
-| App | Three.js (WebGL, custom GLSL shaders), Vite, FastAPI |
-| Engineering | pytest, MATLAB unit tests, ruff, GitHub Actions CI, uv |
+### Predicting live birth
 
-## Data
-- **Time-lapse videos:** Gomez et al. 2022, *A time-lapse embryo dataset for morphokinetic parameter prediction*, Data in Brief. 704 videos (311k frames, one every ~15 min for up to 5-6 days) with 16 phase annotations per video, frame timestamps and blastocyst grades for 160 videos. [Zenodo 10.5281/zenodo.7912264](https://doi.org/10.5281/zenodo.7912264), CC BY-NC-SA 4.0.
-- **Blastocyst photos with outcomes:** Kromp et al. 2023, Scientific Data. 2,344 day-5 photos, 300 graded by an expert panel, 754 transferred embryos with live-birth outcomes. [figshare 10.6084/m9.figshare.20123153.v3](https://doi.org/10.6084/m9.figshare.20123153.v3), CC BY 4.0.
-
-Data problems found and fixed along the way: spreadsheet-mangled hormone values (`1.26` stored as `Jän.26`), inconsistent file names, a test set split by image rather than patient, truncated JPEGs and timestamps rounded so neighbouring frames share one, and skipped division phases that broke a published scoring rule until handled correctly. A tour of the video data: [timelapse-data-tour.ipynb](notebooks/timelapse-data-tour.ipynb).
+For the 603 transferred embryos with known outcomes, live birth was barely predictable from anything. Age alone gets an AUC of 0.53, the embryologist's grade 0.55, the model's grade 0.56 and a fine-tuned network 0.54. Details: [outcome-live-birth.md](reports/blastocyst/outcome-live-birth.md).
 
 ## How it works
-- **Division model:** ResNet-34 on a 3-frame stack (45 minutes before, now, 45 minutes after) so it can see cells mid-division; GPU augmentation (any rotation, flips, zoom, lighting); patient-level train/val/test split; monotonic dynamic-programming decoding.
-- **Viability ranking:** division times up to 72 h -> logistic regression, compared with the published Meseguer 2011 hierarchy.
-- **Grading model:** ConvNeXt-Tiny with three heads, 5-fold cross-fitting (every photo graded by a model that never saw it), test-time augmentation over 8 rotations/flips, Grad-CAM heat maps.
-- **Classical baseline:** circular Hough transform to find the embryo, frame-to-frame motion energy inside it, spike detection and embryology rules for t2-t5 ([matlab/README.md](matlab/README.md)).
-- **App:** Vite + Three.js front end; a FastAPI endpoint ([server/main.py](server/main.py)) grades uploaded photos with the 5-model ensemble and Grad-CAM, center-cropping other shapes to 4:3 so embryos aren't stretched.
 
+- The division model is a ResNet-34 that sees three frames at once (45 minutes before, now and 45 minutes after), so it can catch cells mid-division. A dynamic program then finds the most likely sequence of stages that never goes backwards, which turns noisy per-frame guesses into clean division times.
+- The viability ranking is a logistic regression on division times up to 72 hours, compared against the published Meseguer 2011 categories.
+- The grading model is a ConvNeXt-Tiny with three heads, trained with 5-fold cross-fitting so every photo is graded by a model that never saw it. It averages 8 rotations and flips at test time, and Grad-CAM shows where it looked.
+- My own splits are all by patient, because sibling embryos look alike.
+- The web app uses Three.js and Vite, and a FastAPI server grades uploaded photos.
 
+## Data
+
+- Time-lapse videos: Gomez et al. 2022, *A time-lapse embryo dataset for morphokinetic parameter prediction*, Data in Brief. 704 videos (311k frames, one every 15 minutes for up to 6 days) with 16 phase annotations each. [Zenodo](https://doi.org/10.5281/zenodo.7912264), CC BY-NC-SA 4.0.
+- Blastocyst photos: Kromp et al. 2023, Scientific Data. 2,344 day-5 photos, 300 graded by an expert panel and 754 transferred embryos with live-birth outcomes. [figshare](https://doi.org/10.6084/m9.figshare.20123153.v3), CC BY 4.0.
+
+The raw data needed fixing first. A spreadsheet had turned hormone values into dates (`1.26` became `Jän.26`), file names were padded inconsistently, some JPEGs were cut off, timestamps were rounded so neighbouring frames shared one, and skipped division phases broke a published scoring rule until I handled them. [timelapse-data-tour.ipynb](notebooks/timelapse-data-tour.ipynb) walks through the video data.
+
+## Tech stack
+
+| Area | Tools |
+|---|---|
+| Deep learning | PyTorch (CUDA, mixed precision), timm, Grad-CAM |
+| Classical image processing | MATLAB with the Image Processing Toolbox |
+| Data and statistics | pandas, NumPy, SciPy, scikit-learn, LightGBM |
+| Images, video and figures | OpenCV, Pillow, matplotlib, Jupyter |
+| App | Three.js, Vite, FastAPI |
+| Tooling | pytest, MATLAB unit tests, ruff, GitHub Actions, Docker, uv |
 
 ## Repository layout
-```
-embryoscan/   Python library: blastocyst/, timelapse/, common/ (paths.py defines every file location)
-scripts/      one command per step: blastocyst/, timelapse/
-matlab/       classical image-processing baseline
-server/       FastAPI grading endpoint
-web/          Three.js app and design prototypes
-tests/        python/ (pytest) and matlab/ (matlab.unittest)
-notebooks/    data exploration
-reports/      results and figures, all written by the scripts
-splits/       frozen patient-level train/val/test splits
-docs/         plan, explainer, pitch notes, project structure
-```
-Downloads (`data/`) and trained models (`runs/`) are rebuilt by the scripts and not committed. Naming rules and where new files go: [docs/project-structure.md](docs/project-structure.md).
 
-## Run it
+```
+embryoscan/   Python package: blastocyst/, timelapse/ and common/ (paths.py lists every file location)
+scripts/      one command per step, for each pipeline
+matlab/       classical image-processing baseline
+server/       FastAPI photo grader
+web/          Three.js app and design prototypes
+tests/        pytest and MATLAB unit tests
+notebooks/    data exploration
+reports/      results and figures written by the scripts
+splits/       fixed patient-level train/val/test splits
+deploy/       hosting the demo (Hugging Face Space, model card)
+```
+
+Downloads go to `data/` and trained models to `runs/`; both are rebuilt by the scripts and not committed.
+
+## Running it
+
 ```bash
 python -m venv .venv && .venv\Scripts\activate          # Windows
 pip install -r requirements.txt && pip install -e .
@@ -125,22 +127,25 @@ python scripts/blastocyst/prepare_data.py
 python scripts/blastocyst/train_grader.py                     # ~35 min
 python scripts/blastocyst/report_grading.py
 
-# Classical baseline (MATLAB) and tests
+# Classical baseline and tests
 matlab -batch "addpath('matlab'); runClassicalBaseline"
 pytest
 matlab -batch "assertSuccess(runtests('tests/matlab'))"
 
-# App: http://localhost:5173 (the grading server is only needed to upload your own photo)
+# Web app at http://localhost:5173 (the grading server is only needed to upload a photo)
 uvicorn server.main:app --port 8000
 cd web && npm install && npm run dev
 ```
-Every script takes `--help`. The live-birth analyses are `scripts/blastocyst/run_baselines.py`, `run_outcome_models.py` and `finetune_outcome.py`. Putting the demo online (static app on Vercel or Netlify, grader on a free Hugging Face Space): [docs/deploy.md](docs/deploy.md).
+
+Every script has `--help`. The live-birth analyses are in `scripts/blastocyst/run_baselines.py`, `run_outcome_models.py` and `finetune_outcome.py`. [deploy/README.md](deploy/README.md) covers putting the demo online.
 
 ## Limitations
-- The video dataset has no pregnancy outcomes, so viability means blastocyst formation by day 5, not pregnancy.
-- Each dataset comes from a single clinic; results may not transfer to other clinics, microscopes or labeling styles.
-- The 3D embryo is an illustration driven by detected timings, not a reconstruction of the cells.
-- Research project, not a medical device.
 
-## Plan and log
+- The video dataset has no pregnancy outcomes, so viability here means reaching the blastocyst stage by day 5, not pregnancy.
+- Each dataset comes from a single clinic, so the models may not transfer to other clinics, microscopes or labelling styles.
+- The 3D embryo is an illustration driven by the detected timings, not a reconstruction of the real cells.
+- This is a research project, not a medical device.
 
+## License
+
+The code is MIT licensed. The data keeps its own licenses: the video frames in `web/public/timelapse/` are CC BY-NC-SA 4.0 (Gomez et al. 2022) and the photos in `web/public/blastocyst/` are CC BY 4.0 (Kromp et al. 2023).

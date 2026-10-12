@@ -1,5 +1,5 @@
-// Direction A: "Specimen" — a holographic lab instrument that scans a 3D
-// blastocyst and reports the grade and live-birth estimate.
+// Design prototype A ("Specimen"): a holographic instrument that scans a 3D
+// blastocyst and reports its grade and a live-birth estimate.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'

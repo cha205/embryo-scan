@@ -1,17 +1,10 @@
-"""Export real held-out time-lapse videos for the web app: each video as one
-WebM file plus the division times the model detected and the ones the
-embryologist marked, and one held-out patient's embryos for the Compare tab.
+"""Export held-out time-lapse videos with detected and annotated division times for the web app.
 
-Videos are picked by a fixed rule, not by how well the model did on them:
-test-split videos that reach the expanded blastocyst stage and have ICM/TE
-grades, in a seeded random order. The Compare patient is the first test
-patient (by ID) with 3+ embryos recorded past day 5.
-
-Frames are from Gomez et al. 2022 (CC BY-NC-SA 4.0); the exported folder
-carries the same license.
-
-Writes web/public/timelapse/{demo.json, LICENSE.txt, videos/<id>.webm,
-compare/<id>-day3.jpg, compare/<id>-day5.jpg}.
+Videos are chosen by a fixed rule, not by how well the model did: test videos
+that reach the expanded blastocyst stage and have ICM/TE grades, in seeded
+random order. The Compare tab uses the first test patient (by ID) with 3+
+embryos recorded past day 5. Frames are from Gomez et al. 2022
+(CC BY-NC-SA 4.0), and web/public/timelapse/ carries the same license.
 
 Usage: python scripts/timelapse/export_demo.py [--run stages-resnet34] [--n 3]
 """
@@ -73,7 +66,7 @@ def main():
     model.load_state_dict(torch.load(run / "model.pt", map_location="cuda"))
     model = model.to(memory_format=torch.channels_last).eval()
 
-    shutil.rmtree(OUT, ignore_errors=True)  # rebuild from scratch: no stale files
+    shutil.rmtree(OUT, ignore_errors=True)  # rebuild from scratch so no stale files remain
     (OUT / "videos").mkdir(parents=True)
     (OUT / "compare").mkdir()
     (OUT / "LICENSE.txt").write_text(

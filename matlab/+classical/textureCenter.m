@@ -1,14 +1,13 @@
 function center = textureCenter(img, options)
-%TEXTURECENTER Centre of the most textured region of a frame.
-%   center = classical.textureCenter(img) returns [x y] in pixels of the
-%   peak of local contrast (stdfilt) after heavy smoothing. Cells are grainy
-%   and the culture medium is smooth, so the peak sits on the embryo even
-%   when its outline is too faint for a Hough transform. Very bright pixels
-%   (the well's rim) and a border are ignored, as in embryo_center() in
-%   scripts/timelapse/prepare_data.py. Returns NaN for a featureless image.
+%TEXTURECENTER Center of the most textured region of a frame.
+%   center = classical.textureCenter(img) returns [x y] of the peak of
+%   smoothed local contrast (stdfilt). Cells are grainy and the culture medium
+%   is smooth, so the peak lands on the embryo even when its outline is too
+%   faint for a Hough transform. Very bright pixels (the well's rim) and a
+%   border are ignored. Returns NaN for a featureless image.
 %
 %   Options:
-%     Smoothing  Gaussian sigma in pixels (default 12, for 250 x 250 frames)
+%     Smoothing  Gaussian sigma in pixels (default 12 at 250 x 250)
 
 arguments
     img {mustBeNumeric}

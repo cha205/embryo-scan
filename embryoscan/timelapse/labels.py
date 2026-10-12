@@ -1,15 +1,9 @@
-"""Time-lapse videos (Gomez et al. 2022): labels, splits, decoding and timing.
+"""Labels, splits and division timing for the Gomez et al. 2022 time-lapse videos.
 
-Each video follows one embryo for up to ~5 days, one frame every ~15 minutes.
-An embryologist marked the frame where each development phase starts:
-
+Annotated phases:
   tPB2 polar body out   tPNa pronuclei appear   tPNf pronuclei fade
-  t2 ... t8  2 to 8 cells   t9+ 9 or more cells   tM morula
-  tSB start of blastulation   tB blastocyst   tEB expanded   tHB hatching
-
-The model predicts a phase for every frame; decode_monotonic() then finds the
-most likely sequence that never goes backwards (an embryo can't un-divide),
-which turns noisy per-frame guesses into clean division times.
+  t2 ... t8 2 to 8 cells   t9+ 9 or more cells   tM morula
+  tSB blastulation starts   tB blastocyst   tEB expanded   tHB hatching
 """
 
 from __future__ import annotations
@@ -83,11 +77,11 @@ def make_video_split(videos: pd.Series, seed: int = 2026, test: float = 0.2, val
 
 
 def decode_monotonic(logp: np.ndarray) -> np.ndarray:
-    """Best phase sequence that never decreases.
+    """Most likely phase sequence that never goes backwards, since an embryo can't un-divide.
 
-    logp: (frames, phases) log-probabilities. Dynamic programming:
+    logp is (frames, phases) log-probabilities. Dynamic programming:
     best[t, c] = logp[t, c] + max over c' <= c of best[t-1, c'].
-    Phases may be skipped (some embryos go straight from 2 to 4 cells).
+    Phases may be skipped, as when an embryo goes straight from 2 to 4 cells.
     """
     T, C = logp.shape
     best = np.empty((T, C))
@@ -109,11 +103,11 @@ def decode_monotonic(logp: np.ndarray) -> np.ndarray:
 
 
 def onsets(phase: np.ndarray, hours: np.ndarray) -> dict[str, float]:
-    """Hours at which the embryo first reached each phase *or a later one*.
+    """Hour each phase, or any later one, was first reached.
 
-    Phases can be skipped when two divisions happen between frames (2 cells
-    straight to 4): then t3 = t4, i.e. the time it first had at least 3 cells.
-    Phases never reached are left out."""
+    When two divisions fall between frames (2 cells straight to 4), t3 equals t4:
+    the first time the embryo had at least 3 cells. Phases never reached are left out.
+    """
     out = {}
     valid = phase >= 0
     for c, name in enumerate(PHASES):
@@ -147,15 +141,14 @@ CATEGORY_ORDER = ["A+", "A-", "B+", "B-", "C+", "C-", "D+", "D-", "X"]
 
 
 def meseguer_category(m: dict[str, float]) -> str:
-    """Hierarchical model from Meseguer et al. 2011 (Hum Reprod 26:2658), where
-    implantation rates fell from A to D:
-      1. t5 (5-cell time) inside 48.8-56.6 h  -> A/B, outside -> C/D
-      2. s2 (t4 - t3, how in-sync the 2nd division is) <= 0.76 h -> A or C, else B or D
-      3. cc2 (t3 - t2, second cell cycle) <= 11.9 h -> '+', else '-'
-    The paper's morphology-based exclusions (fragmentation etc.) need annotations
-    this dataset doesn't have. An embryo that never reached 5 cells is outside
-    the t5 window; one that never reached 4 cells can't be scored ('X').
-    Times are hours after fertilization."""
+    """Hierarchical category from Meseguer et al. 2011 (Hum Reprod 26:2658), where
+    implantation rates fall from A to D. Times are hours after fertilization.
+      1. t5 within 48.8-56.6 h: A or B, otherwise C or D
+      2. s2 = t4 - t3 at most 0.76 h: A or C, otherwise B or D
+      3. cc2 = t3 - t2 at most 11.9 h: '+', otherwise '-'
+    The paper's morphology exclusions need annotations this dataset lacks. An
+    embryo that never reached 5 cells is outside the t5 window; one that never
+    reached 4 cells can't be scored ('X')."""
     t5, s2, cc2 = (m.get(k, np.nan) for k in ("t5", "s2", "cc2"))
     if np.isnan(s2) or np.isnan(cc2):
         return "X"
@@ -165,6 +158,6 @@ def meseguer_category(m: dict[str, float]) -> str:
 
 
 def direct_cleavage(m: dict[str, float]) -> bool:
-    """1 -> 3 cells in under 5 hours (cc2 < 5 h), linked to very low
-    implantation (Rubio et al. 2012, Fertil Steril 98:1458)."""
+    """1 to 3 cells in under 5 hours (cc2 < 5 h), linked to very low implantation
+    rates (Rubio et al. 2012, Fertil Steril 98:1458)."""
     return bool(m.get("cc2", np.nan) < 5)

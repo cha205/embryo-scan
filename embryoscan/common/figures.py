@@ -1,8 +1,7 @@
-"""One look for every report figure, matching the web app's palette.
+"""Shared matplotlib style for the report figures, in the web app's palette.
 
-Colours carry meaning across all figures (Python and MATLAB):
-cobalt is the AI model, ink is the embryologist, amber is the classical
-image-processing baseline, grey is everything else.
+Cobalt marks the deep model, ink the embryologist's labels and amber the
+classical baseline, in both the Python and the MATLAB figures.
 """
 
 from __future__ import annotations
@@ -11,7 +10,7 @@ from pathlib import Path
 
 import matplotlib
 
-matplotlib.use("Agg")  # files only, no windows
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from .. import paths  # noqa: E402

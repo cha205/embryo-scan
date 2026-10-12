@@ -1,8 +1,7 @@
-"""Frame-by-frame development-stage model for time-lapse videos.
+"""Per-frame development-stage model for the time-lapse videos.
 
-Input for frame t is a 3-channel stack of frames t-3, t and t+3 (about 45
-minutes apart), so the network sees motion: a cell that is mid-division looks
-different from one that just sits there.
+The input for frame t stacks frames t-3, t and t+3 (about 45 minutes apart) as
+channels, so the network can see cells in the middle of dividing.
 """
 
 from __future__ import annotations
@@ -40,8 +39,8 @@ _NEIGHBOURS = None
 
 
 def neighbours(offset: int = OFFSET) -> tuple[np.ndarray, np.ndarray]:
-    """For every cache row, the row `offset` frames earlier/later in the same
-    video (clamped at the ends). Rows of a video are contiguous and in time order."""
+    """Rows `offset` frames earlier and later in the same video, clamped at the ends.
+    Assumes each video's rows are contiguous and in time order."""
     global _NEIGHBOURS
     if _NEIGHBOURS is None:
         df = pd.read_csv(paths.TIMELAPSE_TABLE, usecols=["row", "video"])
@@ -80,17 +79,17 @@ def train(df: pd.DataFrame, cfg: StageConfig, log=print, val: pd.DataFrame | Non
     assert cfg.stride == OFFSET, "kept frames must include their stacked neighbours"
     arr = np.load(CACHE, mmap_mode="r")
     prev, nxt = neighbours()
-    # Keep every `stride`-th frame (stride == OFFSET, so each kept frame's
-    # neighbours are kept too) plus each video's last frame (clamped neighbour).
+    # Every stride-th frame plus each video's last frame. With stride == OFFSET
+    # that covers every stacked neighbour, so only these frames go to the GPU.
     pos = df.groupby("video").cumcount()
     last = pos == df.groupby("video")["video"].transform("size") - 1
     on_grid = ((pos % cfg.stride) == 0).to_numpy()
     frames = np.sort(df["row"].to_numpy()[on_grid | last.to_numpy()])
-    centre_ok = set(df["row"].to_numpy()[on_grid])  # last frames are only neighbours, not samples
+    centre_ok = set(df["row"].to_numpy()[on_grid])  # last frames are neighbours, not samples
     log(f"loading {len(frames)} frames to the GPU")
     t0 = time.time()
     X = torch.empty((len(frames), arr.shape[1], arr.shape[2]), dtype=torch.uint8, device=dev)
-    for s in range(0, len(frames), 8192):  # file order: fast reads from a hard drive
+    for s in range(0, len(frames), 8192):  # sorted rows read sequentially, which matters on a hard drive
         X[s : s + 8192] = torch.from_numpy(np.asarray(arr[frames[s : s + 8192]])).to(dev)
     slot = {r: i for i, r in enumerate(frames)}
     phase_by_row = dict(zip(df["row"], df["phase"], strict=True))

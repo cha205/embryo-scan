@@ -1,21 +1,19 @@
 function [center, radius, method] = findEmbryo(img, options)
 %FINDEMBRYO Locate the embryo in a frame.
 %   [center, radius, method] = classical.findEmbryo(img) returns the embryo
-%   centre [x y] in pixels, its radius and how it was found:
+%   center [x y] and radius in pixels, and how it was found:
 %
-%     "hough"    a circular Hough transform (imfindcircles) found its outline.
-%                The well's bright rim is a much larger circle, so the radius
-%                range leaves it out.
-%     "texture"  no circle: the centre of the most textured region
-%                (classical.textureCenter), radius NaN
-%     "none"     nothing textured either: the image centre, radius NaN
+%     "hough"    circular Hough transform; the radius range excludes the much
+%                larger rim of the well
+%     "texture"  no circle, so the most textured region is used
+%                (classical.textureCenter) and radius is NaN
+%     "none"     no texture either: the image center, radius NaN
 %
-%   Embryos often rest against the side of the well, far from the image
-%   centre, so circles are scored by strength alone.
+%   Circles are ranked by strength only, since embryos often rest against
+%   the side of the well, far from the image center.
 %
 %   Options:
-%     RadiusRange  [min max] radius in pixels (default [35 68], for frames
-%                  scaled to 250 x 250)
+%     RadiusRange  [min max] radius in pixels (default [35 68] at 250 x 250)
 %     Sensitivity  imfindcircles sensitivity (default 0.93)
 
 arguments

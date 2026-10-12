@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   server: {
-    // Grading API: uvicorn server.main:app --port 8000 (in production it serves this app itself)
+    // grading server in development: uvicorn server.main:app --port 8000
     proxy: { '/api': 'http://localhost:8000' },
   },
   build: {

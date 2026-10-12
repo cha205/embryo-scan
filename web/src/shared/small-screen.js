@@ -1,6 +1,5 @@
-// The 3D lab is laid out for laptop and desktop screens. On a phone (see
-// .small-screen in base.css) say so first, once per visit, instead of showing
-// panels stacked on top of each other.
+// The pages are laid out for laptop and desktop screens, so phones get a notice
+// first (styled by .small-screen in base.css), once per visit.
 const KEY = 'embryoscan-small-screen-ok'
 let dismissed = false
 try {

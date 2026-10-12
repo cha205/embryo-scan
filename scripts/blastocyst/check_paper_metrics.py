@@ -1,7 +1,7 @@
-"""Sanity check: score the paper's own XCeption predictions (shipped with the
-dataset) with our grading metric. If the numbers match Table 2 of Kromp et al.
-2023 (expansion 0.78, ICM 0.69, TE 0.62), our evaluation is computed the same
-way as the published benchmark.
+"""Score the paper's XCeption predictions (shipped with the dataset) with our grading metric.
+
+Matching Table 2 of Kromp et al. 2023 (expansion 0.78, ICM 0.69, TE 0.62)
+confirms our evaluation is computed the same way as the published benchmark.
 
 Usage: python scripts/blastocyst/check_paper_metrics.py
 """
