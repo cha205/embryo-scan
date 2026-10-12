@@ -25,6 +25,7 @@ runs/
 web/node_modules/
 web/dist/
 .vercel/
+.env*.local
 
 # Local experiments
 scratch/
