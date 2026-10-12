@@ -134,6 +134,7 @@ scene.add(terrain)
 // ---------------------------------------------------------------- UI
 const $ = (s) => document.querySelector(s)
 const state = { i: -1, head: 'icm', rise: 0, riseTarget: 0, mix: null, pending: null }
+const items = [] // test-set samples, then the visitor's own photos
 const heatCache = {}
 const heat = (url) => {
   if (!heatCache[url]) {
@@ -144,18 +145,26 @@ const heat = (url) => {
   return heatCache[url]
 }
 
-samples.forEach((s, i) => {
+function addItem(item, list) {
   const li = document.createElement('li')
-  li.innerHTML = `<img src="${s.photo}" alt="Embryo ${s.id}"><div><b>Embryo ${String.fromCharCode(65 + i)}</b><span>panel ${s.expert} · AI ${s.model}</span></div>`
+  li.innerHTML = `<img alt=""><div><b></b><span></span></div>`
+  li.querySelector('img').src = item.photo
+  li.querySelector('b').textContent = item.title
+  li.querySelector('span').textContent = item.expert ? `panel ${item.expert} · AI ${item.model}` : `AI ${item.model}`
+  const i = items.push({ ...item, li }) - 1
   li.addEventListener('click', () => select(i))
-  $('#samples').append(li)
-})
+  list.append(li)
+  return i
+}
+
+samples.forEach((s, i) => addItem({ ...s, title: `Embryo ${String.fromCharCode(65 + i)}` }, $('#samples')))
 
 function letter(k, c) { return k === 'exp' ? String(c + 1) : 'ABC'[c] }
 
 function showResult(s) {
   $('#r-grade').textContent = s.model
-  $('#r-panel').textContent = s.expert
+  $('#r-panel').textContent = s.expert ?? ''
+  $('.vs').hidden = !s.expert
   const top = (k) => s.probs[k].indexOf(Math.max(...s.probs[k]))
   const e = top('exp')
   $('#r-explain').textContent = e >= 2
@@ -171,14 +180,14 @@ function showResult(s) {
 
 function select(i) {
   if (i === state.i) return
-  document.querySelectorAll('#samples li').forEach((li, j) => li.classList.toggle('on', j === i))
+  items.forEach((item, j) => item.li.classList.toggle('on', j === i))
   state.pending = i
   state.riseTarget = 0 // sink the terrain, swap, then rise again
 }
 
 function apply(i) {
   state.i = i
-  const s = samples[i]
+  const s = items[i]
   const tex = loader.load(s.photo)
   tex.colorSpace = THREE.SRGBColorSpace
   photo.material.map = tex
@@ -194,9 +203,81 @@ document.querySelectorAll('#r-seg button').forEach((b) => b.addEventListener('cl
   if (b.dataset.head === state.head || state.i < 0) return
   document.querySelectorAll('#r-seg button').forEach((x) => x.classList.toggle('on', x === b))
   state.head = b.dataset.head
-  terrainMat.uniforms.uNext.value = heat(samples[state.i].heatmaps[state.head])
+  terrainMat.uniforms.uNext.value = heat(items[state.i].heatmaps[state.head])
   state.mix = 0
 }))
+
+// ---------------------------------------------------------------- your photo
+// Sent to the grading server (server/main.py), which returns the photo as the
+// model saw it, the grade and a heat map per head, in the same shape as a sample.
+const upload = $('#upload')
+const input = upload.querySelector('input')
+const note = $('#upload-note')
+const NOTE = note.textContent
+const OFFLINE = 'Grading your own photo needs the local server: uvicorn server.main:app --port 8000, then reload.'
+let uploads = 0
+
+function setUpload(mode, message = NOTE) {
+  upload.classList.toggle('busy', mode === 'busy')
+  upload.classList.toggle('offline', mode === 'offline')
+  input.disabled = mode !== 'ready'
+  upload.querySelector('.ico i').className = `ti ${{ busy: 'ti-loader-2', offline: 'ti-plug-connected-x' }[mode] ?? 'ti-upload'}`
+  $('#upload-title').textContent = { busy: 'Grading…', offline: 'Grading server offline' }[mode] ?? 'Grade a photo'
+  $('#upload-sub').textContent = { busy: '5 models × 8 views', offline: 'see below' }[mode] ?? 'PNG or JPG, or drop it here'
+  note.textContent = mode === 'offline' ? OFFLINE : message
+  note.classList.toggle('error', message !== NOTE)
+}
+
+async function gradeFile(file) {
+  if (!file || input.disabled) return
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    setUpload('ready', 'Use a PNG or JPG photo.')
+    return
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    setUpload('ready', 'That image is larger than 10 MB.')
+    return
+  }
+  setUpload('busy')
+  try {
+    const body = new FormData()
+    body.append('file', file)
+    const r = await fetch('/api/grade', { method: 'POST', body })
+    const res = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error(res.detail ?? OFFLINE)
+    uploads += 1
+    const i = addItem({ photo: res.photo, heatmaps: res.heatmaps, probs: res.probs, model: res.grade, expert: null, title: `Your photo ${uploads}` }, $('#uploads'))
+    setUpload('ready')
+    select(i)
+  } catch (err) {
+    setUpload('ready', err instanceof TypeError ? OFFLINE : err.message)
+  }
+}
+
+input.addEventListener('change', () => {
+  gradeFile(input.files[0])
+  input.value = '' // allow choosing the same file again
+})
+upload.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && !input.disabled) {
+    e.preventDefault()
+    input.click()
+  }
+})
+window.addEventListener('dragover', (e) => {
+  e.preventDefault()
+  document.body.classList.toggle('dropping', !input.disabled)
+})
+window.addEventListener('dragleave', (e) => { if (!e.relatedTarget) document.body.classList.remove('dropping') })
+window.addEventListener('drop', (e) => {
+  e.preventDefault()
+  document.body.classList.remove('dropping')
+  gradeFile(e.dataTransfer.files[0])
+})
+fetch('/api/health')
+  .then((r) => (r.ok ? r.json() : Promise.reject(new Error())))
+  .then((h) => setUpload(h.models ? 'ready' : 'offline'))
+  .catch(() => setUpload('offline'))
 
 function resize() {
   const w = window.innerWidth

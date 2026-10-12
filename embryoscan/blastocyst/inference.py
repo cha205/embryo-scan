@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from PIL import Image
+from PIL import Image, ImageOps
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from scipy.ndimage import gaussian_filter
@@ -21,8 +21,17 @@ from .grading import DEFAULT_RUN, HEADS, IMAGE_HW, Grader, decode
 
 
 def load_image(img: Image.Image) -> torch.Tensor:
-    """Any embryo photo -> (1, 1, 288, 384) uint8, matching the training cache."""
-    g = img.convert("L").resize(IMAGE_HW[::-1], Image.Resampling.LANCZOS)
+    """Any embryo photo -> (1, 1, 288, 384) uint8, matching the training cache.
+
+    Photos that aren't 4:3 are centre-cropped to 4:3 first instead of being
+    stretched; the dataset's own 512 x 384 photos are unchanged. Phone photos
+    are turned upright from their EXIF orientation."""
+    h, w = IMAGE_HW
+    g = ImageOps.exif_transpose(img).convert("L")
+    scale = min(g.width / w, g.height / h)
+    cw, ch = round(w * scale), round(h * scale)
+    left, top = (g.width - cw) // 2, (g.height - ch) // 2
+    g = g.crop((left, top, left + cw, top + ch)).resize((w, h), Image.Resampling.LANCZOS)
     return torch.from_numpy(np.asarray(g).copy())[None, None]
 
 

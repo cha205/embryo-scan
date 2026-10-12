@@ -13,7 +13,7 @@ AI that watches 5-day IVF embryo time-lapse videos, detects every cell division,
 2. **Ranks embryos by viability from their first three days.** Division timings up to day 3 predict which embryos will form a blastocyst by day 5, the standard viability proxy in time-lapse research.
 3. **Grades the blastocyst.** A second model grades day-5 photos on the Gardner scale (expansion, inner cell mass, trophectoderm), benchmarked against a panel of embryologists.
 4. **Measures what deep learning adds.** A classical image-processing pipeline in MATLAB, with no machine learning, times the same divisions on the same videos as a baseline.
-5. **Shows its work.** A Three.js app replays a real video next to a 3D "digital twin" that divides at the detected times, and heat maps show what the grading model looked at.
+5. **Shows its work.** A Three.js app replays a real video next to a 3D "digital twin" that divides at the detected times, and grades any day-5 photo you upload, with heat maps of what the model looked at.
 
 ## Results
 
@@ -87,7 +87,7 @@ Data problems found and fixed along the way: spreadsheet-mangled hormone values 
 - **Viability ranking:** division times up to 72 h -> logistic regression, compared with the published Meseguer 2011 hierarchy.
 - **Grading model:** ConvNeXt-Tiny with three heads, 5-fold cross-fitting (every photo graded by a model that never saw it), test-time augmentation over 8 rotations/flips, Grad-CAM heat maps.
 - **Classical baseline:** circular Hough transform to find the embryo, frame-to-frame motion energy inside it, spike detection and embryology rules for t2-t5 ([matlab/README.md](matlab/README.md)).
-- **App:** Vite + Three.js front end; FastAPI grading endpoint ([server/main.py](server/main.py)).
+- **App:** Vite + Three.js front end; a FastAPI endpoint ([server/main.py](server/main.py)) grades uploaded photos with the 5-model ensemble and Grad-CAM, center-cropping other shapes to 4:3 so embryos aren't stretched.
 
 
 
@@ -130,7 +130,8 @@ matlab -batch "addpath('matlab'); runClassicalBaseline"
 pytest
 matlab -batch "assertSuccess(runtests('tests/matlab'))"
 
-# App: http://localhost:5173
+# App: http://localhost:5173 (the grading server is only needed to upload your own photo)
+uvicorn server.main:app --port 8000
 cd web && npm install && npm run dev
 ```
 Every script takes `--help`. The live-birth analyses are `scripts/blastocyst/run_baselines.py`, `run_outcome_models.py` and `finetune_outcome.py`.

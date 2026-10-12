@@ -2,6 +2,10 @@ import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  server: {
+    // Grading API: uvicorn server.main:app --port 8000 (in production it serves this app itself)
+    proxy: { '/api': 'http://localhost:8000' },
+  },
   build: {
     target: 'es2022', // top-level await
     rollupOptions: {

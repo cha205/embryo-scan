@@ -28,6 +28,15 @@
     <div class="eyebrow">Day-5 embryos</div>
     <p class="hint">Photos from the expert-panel test set. No model trained on them.</p>
     <ul id="samples"></ul>
+
+    <div class="eyebrow mt">Your photo</div>
+    <label class="upload" id="upload" tabindex="0">
+      <input type="file" accept="image/png,image/jpeg" hidden>
+      <span class="ico"><i class="ti ti-upload"></i></span>
+      <div><b id="upload-title">Grade a photo</b><span id="upload-sub">PNG or JPG, or drop it here</span></div>
+    </label>
+    <ul id="uploads"></ul>
+    <p class="hint" id="upload-note">Graded by the local server and never stored. The model learned from one clinic's microscope, so photos from other setups may grade poorly.</p>
   </aside>
 
   <aside class="result">
