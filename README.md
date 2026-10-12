@@ -4,6 +4,8 @@ Embryo Scan watches 5-day time-lapse videos of IVF embryos, detects every cell d
 
 [![CI](https://github.com/cha205/embryo-scan/actions/workflows/ci.yml/badge.svg)](https://github.com/cha205/embryo-scan/actions/workflows/ci.yml)
 
+Try it at [embryo-scan.vercel.app](https://embryo-scan.vercel.app).
+
 ![The development stage of one held-out embryo over five days, from the embryologist's labels and from the model](reports/figures/timelapse-stage-timeline.png)
 
 Every number below comes from patients the models never saw in training.
