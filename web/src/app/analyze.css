@@ -8,7 +8,7 @@
 .picker li.on { border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-soft); }
 .picker img { width: 64px; height: 48px; object-fit: cover; border-radius: 8px; display: block; filter: contrast(1.1); }
 .picker li b { display: block; font-size: 14px; }
-.picker li span { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.picker li span { display: block; white-space: pre-line; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .picker .hint.error { color: #c2410c; }
 #uploads:not(:empty) { margin-top: 10px; }
 

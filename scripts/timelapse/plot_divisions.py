@@ -35,15 +35,21 @@ def plot_timeline(pred: pd.DataFrame, video: str) -> None:
     g = pred[pred.video == video]
     labelled = g[g.phase >= 0]
     fig, ax = plt.subplots(figsize=(9.5, 5))
-    ax.scatter(g.hours, g.raw, s=7, color=figures.COBALT, alpha=0.3, lw=0, label="model, each frame on its own")
-    ax.step(g.hours, g.decoded, where="post", color=figures.COBALT, lw=2.2, label="model after decoding")
+    ax.scatter(g.hours, g.raw, s=7, color=figures.COBALT, alpha=0.3, lw=0, label="per-frame prediction")
+    ax.step(g.hours, g.decoded, where="post", color=figures.COBALT, lw=2.2, label="monotonic decoding")
     ax.step(
-        labelled.hours, labelled.phase, where="post", color=figures.INK, lw=1.2, ls=(0, (4, 3)), label="embryologist"
+        labelled.hours,
+        labelled.phase,
+        where="post",
+        color=figures.INK,
+        lw=1.2,
+        ls=(0, (4, 3)),
+        label="embryologist's annotation",
     )
     ax.set_yticks(range(len(PHASE_NAMES)), PHASE_NAMES)
-    ax.set_xlabel("hours after fertilization")
+    ax.set_xlabel("Time after insemination (h)")
     ax.set_xlim(0, g.hours.max())
-    ax.set_title(f"Every development stage of one held-out embryo (video {video})")
+    ax.set_title(f"Developmental phases of a held-out embryo (video {video})")
     ax.legend(loc="lower right")
     figures.save(fig, "timelapse-stage-timeline")
 
@@ -52,7 +58,7 @@ def plot_errors(errors: pd.DataFrame, n_videos: int) -> None:
     order = [d for d in DIVISIONS if d in set(errors.phase)]
     data = [errors.loc[errors.phase == d, "error_h"].to_numpy() for d in order]
     fig, ax = plt.subplots(figsize=(9.5, 4.2))
-    ax.axhspan(-1, 1, color=figures.COBALT, alpha=0.07, lw=0, label="within 1 hour")
+    ax.axhspan(-1, 1, color=figures.COBALT, alpha=0.07, lw=0, label="within 1 h")
     ax.axhline(0, color=figures.FAINT, lw=0.8)
     ax.boxplot(
         data,
@@ -67,14 +73,14 @@ def plot_errors(errors: pd.DataFrame, n_videos: int) -> None:
     )
     names = [PHASE_NAMES[P[d]] for d in order]
     ax.set_xticks(range(1, len(order) + 1), names, rotation=30, ha="right")
-    ax.set_ylabel("detected minus embryologist (hours)")
+    ax.set_ylabel("Detected minus annotated onset (h)")
     ax.set_ylim(-Y_RANGE_H, Y_RANGE_H)
-    ax.set_title(f"When each division happened: error on {n_videos} held-out videos")
+    ax.set_title(f"Onset timing error per event ({n_videos} held-out videos)")
     ax.legend(loc="upper left")
     ax.text(
         1.0,
         -0.36,
-        f"Boxes: middle 50% of videos; whiskers: 10th-90th percentile, cut off at {Y_RANGE_H} hours.",
+        f"Boxes span the interquartile range; whiskers span the 10th-90th percentiles, truncated at ±{Y_RANGE_H} h.",
         transform=ax.transAxes,
         ha="right",
         fontsize=8.5,

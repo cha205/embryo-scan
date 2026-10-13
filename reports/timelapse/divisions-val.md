@@ -1,14 +1,14 @@
-# Division timing: val videos
+# Division timing: val partition
 
-73 videos from patients the model never saw, 31,770 labelled frames.
+The evaluation comprises 73 videos from patients who were not used for training, with 31,770 annotated frames.
 
-- Frame-by-frame phase accuracy: 0.684 raw, **0.708** after the never-go-backwards decoding (0.916 within one phase).
-- Median timing error across all divisions: **0.85 h** (frames are ~0.25 h apart).
-- Meseguer 2011 category (A+ ... D-) from detected vs annotated timings: same category for 47% of 73 videos.
+- Frame-level phase accuracy is 0.684 before decoding and **0.708** after monotonic decoding; 0.916 of frames are assigned to the annotated phase or an adjacent one.
+- The median absolute onset error across all divisions is **0.85 h**, for a frame interval of approximately 0.25 h.
+- The Meseguer et al. (2011) category (A+ to D-) derived from the detected timings agrees with the category derived from the annotations in 47% of 73 videos.
 
-Timing error per phase (detected onset minus the embryologist's):
+Timing error per event (detected onset minus annotated onset, in hours):
 
-| phase | videos | median_abs | within_1h | within_2h |
+| event | videos | median absolute error (h) | within 1 h | within 2 h |
 |---|---|---|---|---|
 | t2 | 73 | 0.20 | 0.96 | 0.96 |
 | t3 | 73 | 0.50 | 0.64 | 0.81 |

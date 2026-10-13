@@ -4,14 +4,14 @@ colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_port: 7860
-short_description: Grades day-5 IVF embryo photos (research demo)
+short_description: Gardner grading of day-5 IVF embryo images (research use)
 ---
 
-# Embryo Scan photo grader
+# Embryo Scan image grading service
 
-The API behind the "grade your own photo" feature of [Embryo Scan](https://github.com/cha205/embryo-scan): a 5-model ConvNeXt-Tiny ensemble grades a day-5 blastocyst photo on the Gardner scale and returns Grad-CAM heat maps of what it looked at.
+This Space provides the API behind the image-upload function of [Embryo Scan](https://github.com/cha205/embryo-scan). A five-model ConvNeXt-Tiny ensemble grades a day-5 blastocyst image on the Gardner scale and returns a Grad-CAM attribution map for each grading criterion.
 
-- `GET /api/health`: whether the models are loaded
-- `POST /api/grade`: multipart upload of a PNG or JPG, field `file`
+- `GET /api/health` reports whether the models are loaded.
+- `POST /api/grade` accepts a multipart upload of a PNG or JPEG image in the field `file`.
 
-Runs on a free CPU, so it uses fewer test-time views than the evaluated setup (2 instead of 8) to answer in a few seconds. Research demo, not for medical use.
+The service runs on a free CPU and therefore uses fewer test-time views than the evaluated configuration (2 instead of 8), which allows it to respond within a few seconds. It is intended for research use only and is not suitable for clinical decision-making.

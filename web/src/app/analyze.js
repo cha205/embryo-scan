@@ -10,12 +10,15 @@ const W = 2.4
 const H = 1.8
 const samples = await fetch('/blastocyst/samples.json').then((r) => r.json())
 
+// Gardner and Schoolcraft (1999) criteria; this dataset grades expansion 1-5
 const EXPLAIN = {
-  exp: ['Early blastocyst: the cavity is less than half the embryo.', 'Blastocyst: the cavity is half the embryo or more.',
-    'Full blastocyst: the cavity fills the embryo.', 'Expanded: the cavity has grown and the shell is thinning.',
-    'Hatching: the embryo is starting to break out of its shell.'],
-  icm: ['many cells, tightly packed (best)', 'several cells, loosely grouped', 'very few cells'],
-  te: ['many cells forming an even layer (best)', 'few cells, a looser layer', 'very few, large cells'],
+  exp: ['Expansion grade 1 (early blastocyst) indicates that the blastocoel occupies less than half of the embryo volume.',
+    'Expansion grade 2 (blastocyst) indicates that the blastocoel occupies at least half of the embryo volume.',
+    'Expansion grade 3 (full blastocyst) indicates that the blastocoel completely fills the embryo.',
+    'Expansion grade 4 (expanded blastocyst) indicates that the blastocoel volume exceeds that of the early embryo and that the zona pellucida is thinning.',
+    'Expansion grade 5 (hatching blastocyst) indicates that the trophectoderm has begun to herniate through the zona pellucida.'],
+  icm: ['numerous, tightly packed cells', 'several, loosely grouped cells', 'very few cells'],
+  te: ['numerous cells forming a cohesive epithelium', 'few cells forming a loose epithelium', 'very few, large cells'],
 }
 
 // ---------------------------------------------------------------- scene
@@ -152,7 +155,7 @@ function addItem(item, list) {
   li.innerHTML = `<img alt=""><div><b></b><span></span></div>`
   li.querySelector('img').src = item.photo
   li.querySelector('b').textContent = item.title
-  li.querySelector('span').textContent = item.expert ? `panel ${item.expert} · AI ${item.model}` : `AI ${item.model}`
+  li.querySelector('span').textContent = item.expert ? `panel ${item.expert}\nmodel ${item.model}` : `model ${item.model}`
   const i = items.push({ ...item, li }) - 1
   li.addEventListener('click', () => select(i))
   list.append(li)
@@ -170,8 +173,8 @@ function showResult(s) {
   const top = (k) => s.probs[k].indexOf(Math.max(...s.probs[k]))
   const e = top('exp')
   $('#r-explain').textContent = e >= 2
-    ? `${EXPLAIN.exp[e]} Inner cell mass ${letter('icm', top('icm'))}: ${EXPLAIN.icm[top('icm')]}. Trophectoderm ${letter('te', top('te'))}: ${EXPLAIN.te[top('te')]}.`
-    : `${EXPLAIN.exp[e]} Inner cell mass and trophectoderm aren't graded this early.`
+    ? `${EXPLAIN.exp[e]} The inner cell mass is graded ${letter('icm', top('icm'))}, indicating ${EXPLAIN.icm[top('icm')]}. The trophectoderm is graded ${letter('te', top('te'))}, indicating ${EXPLAIN.te[top('te')]}.`
+    : `${EXPLAIN.exp[e]} The inner cell mass and the trophectoderm are not graded below expansion grade 3.`
   const names = { exp: 'Expansion', icm: 'Inner cell mass', te: 'Trophectoderm' }
   $('#r-heads').innerHTML = Object.entries(s.probs).map(([k, p]) => {
     const t = top(k)
@@ -209,7 +212,7 @@ document.querySelectorAll('#r-seg button').forEach((b) => b.addEventListener('cl
   state.mix = 0
 }))
 
-// ---------------------------------------------------------------- your photo
+// ---------------------------------------------------------------- uploaded images
 // The grading server returns the photo as the model saw it, the grade and a heat
 // map per head, in the same shape as a sample. The hosted server sleeps when
 // idle, so the page keeps polling while it wakes up.
@@ -218,8 +221,8 @@ const input = upload.querySelector('input')
 const note = $('#upload-note')
 const NOTE = note.textContent
 const OFFLINE = API
-  ? 'The photo grader is offline right now. Try again later.'
-  : 'Grading your own photo needs the local server: uvicorn server.main:app --port 8000, then reload.'
+  ? 'The grading service is currently unavailable; please try again later.'
+  : 'Grading uploaded images requires the local inference server (uvicorn server.main:app --port 8000); please start the server and reload the page.'
 const WAKE_TRIES = 24 // ~5 s apart: a sleeping Space takes about a minute to start
 let views = 8
 let uploads = 0
@@ -229,10 +232,10 @@ function setUpload(mode, message = NOTE) {
   upload.classList.toggle('offline', mode === 'offline')
   input.disabled = mode !== 'ready'
   const [icon, title, sub] = {
-    busy: ['ti-loader-2', 'Grading…', `5 models × ${views} views`],
-    waking: ['ti-loader-2', 'Waking the grader…', 'about a minute'],
-    offline: ['ti-plug-connected-x', 'Grader offline', 'see below'],
-  }[mode] ?? ['ti-upload', 'Grade a photo', 'PNG or JPG, or drop it here']
+    busy: ['ti-loader-2', 'Grading…', `5 models × ${views} test-time views`],
+    waking: ['ti-loader-2', 'Starting the grading service…', 'approximately 1 min'],
+    offline: ['ti-plug-connected-x', 'Grading service unavailable', 'see the note below'],
+  }[mode] ?? ['ti-upload', 'Grade an image', 'PNG or JPEG, ≤10\u00a0MB']
   upload.querySelector('.ico i').className = `ti ${icon}`
   $('#upload-title').textContent = title
   $('#upload-sub').textContent = sub
@@ -265,11 +268,11 @@ async function connect() {
 async function gradeFile(file) {
   if (!file || input.disabled) return
   if (!['image/png', 'image/jpeg'].includes(file.type)) {
-    setUpload('ready', 'Use a PNG or JPG photo.')
+    setUpload('ready', 'This file type is not supported; please provide a PNG or JPEG image.')
     return
   }
   if (file.size > 10 * 1024 * 1024) {
-    setUpload('ready', 'That image is larger than 10 MB.')
+    setUpload('ready', 'The file exceeds the 10 MB size limit.')
     return
   }
   setUpload('busy')
@@ -280,7 +283,7 @@ async function gradeFile(file) {
     const res = await r.json().catch(() => ({}))
     if (!r.ok) throw new Error(res.detail ?? OFFLINE)
     uploads += 1
-    const i = addItem({ photo: res.photo, heatmaps: res.heatmaps, probs: res.probs, model: res.grade, expert: null, title: `Your photo ${uploads}` }, $('#uploads'))
+    const i = addItem({ photo: res.photo, heatmaps: res.heatmaps, probs: res.probs, model: res.grade, expert: null, title: `Uploaded image ${uploads}` }, $('#uploads'))
     setUpload('ready')
     select(i)
   } catch (err) {

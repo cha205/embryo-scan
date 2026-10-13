@@ -12,9 +12,9 @@ if (!dismissed) {
   notice.className = 'small-screen'
   notice.innerHTML = `<div class="card">
     <i class="ti ti-device-desktop"></i>
-    <h2>Best on a bigger screen</h2>
-    <p>Embryo Scan is an interactive 3D lab: real embryo time-lapse videos, an AI grader and 3D embryos you can turn around. It's laid out for a laptop or desktop.</p>
-    <button type="button" class="primary">Continue anyway</button>
+    <h2>Designed for larger displays</h2>
+    <p>Embryo Scan is an interactive research demonstrator that combines time-lapse recordings of human embryos, automated Gardner grading and three-dimensional illustrations. The interface is designed for laptop and desktop displays.</p>
+    <button type="button" class="primary">Continue</button>
   </div>`
   notice.querySelector('button').addEventListener('click', () => {
     notice.hidden = true

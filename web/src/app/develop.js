@@ -215,25 +215,27 @@ const teSheet = new THREE.Mesh(new THREE.SphereGeometry(teRadius, 160, 120), epi
 blast.add(teSheet)
 
 const callouts = new Callouts(document.querySelector('#callouts'), camera)
-callouts.add({ object: blast, local: anchors.icm, side: 1, slot: 0, className: 'accent', html: 'Inner cell mass<span>becomes the baby</span>' })
-callouts.add({ object: blast, local: anchors.te, side: 1, slot: 1, html: 'Trophectoderm<span>becomes the placenta</span>' })
+callouts.add({ object: blast, local: anchors.icm, side: 1, slot: 0, className: 'accent', html: 'Inner cell mass<span>gives rise to the embryo proper</span>' })
+callouts.add({ object: blast, local: anchors.te, side: 1, slot: 1, html: 'Trophectoderm<span>gives rise to the placenta</span>' })
 callouts.add({ object: blast, local: anchors.cavity, side: 1, slot: 2, html: 'Blastocoel<span>fluid-filled cavity</span>' })
-callouts.add({ object: zona, local: anchors.zona, side: 1, slot: 3, html: 'Zona pellucida<span>protective shell</span>' })
+callouts.add({ object: zona, local: anchors.zona, side: 1, slot: 3, html: 'Zona pellucida<span>glycoprotein shell</span>' })
 
 // ---------------------------------------------------------------- stages
 const STAGES = [
-  { from: 0, name: 'Fertilized egg', text: 'One cell. The two round spots are the sets of DNA from each parent, before they merge.' },
-  { from: E.t2, name: 'Two cells', text: 'The first division. Cells split without growing, so each division halves their size.' },
-  { from: E.t3, name: 'Three cells', text: 'Divisions are not simultaneous: one cell splits before its sister. A long gap here can be a warning sign.' },
-  { from: E.t4, name: 'Four cells', text: 'The second round is done. How close together t3 and t4 happen (s2) is a known quality marker.' },
-  { from: E.t5, name: 'Five to eight cells', text: 'The four cells divide one by one. When the fifth cell appears (t5) is one of the strongest timing markers.' },
-  { from: E.t8, name: 'Eight cells', text: 'Day 3. The embryo starts using its own genes instead of the egg\'s supplies.' },
-  { from: E['t9+'], name: 'Nine or more cells', text: 'Divisions speed up and fall out of sync; individual cells get hard to count.' },
-  { from: E.tM, name: 'Morula', text: 'The cells pull tightly together into a solid ball. Morula is Latin for mulberry.' },
-  { from: E.tSB, name: 'Blastocyst forming', text: 'Fluid starts collecting inside. The cells split into an outer layer and an inner cluster.' },
-  { from: E.tB, name: 'Blastocyst', text: 'Day 5. The outer layer becomes the placenta, the inner cluster becomes the baby. This is the stage Embryo Scan grades.' },
+  { from: 0, name: 'Zygote', text: 'The zygote is the fertilized oocyte, in which the maternal and paternal pronuclei are visible as two round structures until they fade (tPNf) shortly before the first cleavage division.' },
+  { from: E.t2, name: '2-cell stage', text: 'The first cleavage division (t2) divides the zygote into two blastomeres. Because cleavage divisions proceed without cell growth, the volume of each blastomere approximately halves with every division.' },
+  { from: E.t3, name: '3-cell stage', text: 'The two blastomeres divide asynchronously, which produces a transient 3-cell stage. The duration of the second cell cycle (cc2 = t3 − t2) is an established morphokinetic marker, and cycles shorter than 5 h (direct cleavage) are associated with low implantation potential.' },
+  { from: E.t4, name: '4-cell stage', text: 'The 4-cell stage (t4) completes the second round of cleavage. The synchrony of the second division (s2 = t4 − t3) is a recognized quality marker, and Meseguer et al. (2011) associated s2 ≤ 0.76 h with higher implantation rates.' },
+  { from: E.t5, name: '5- to 8-cell stage', text: 'The four blastomeres then divide sequentially. The time at which the fifth cell appears (t5) is among the most informative timing parameters, and Meseguer et al. (2011) reported the highest implantation rates for t5 between 48.8 and 56.6 h.' },
+  { from: E.t8, name: '8-cell stage', text: 'On day 3, around the 8-cell stage, the major wave of embryonic genome activation takes place, after which development depends on transcription of the embryonic genome rather than on maternally inherited transcripts.' },
+  { from: E['t9+'], name: '≥9-cell stage', text: 'Divisions become increasingly asynchronous, and blastomeres overlap in the image plane, which makes individual cells difficult to count for embryologists and automated methods alike.' },
+  { from: E.tM, name: 'Morula', text: 'During compaction, the blastomeres flatten and adhere tightly to one another, forming a solid mass in which individual cell boundaries are no longer distinguishable.' },
+  { from: E.tSB, name: 'Blastulation', text: 'Blastulation begins with cavitation (tSB), during which fluid accumulates to form the blastocoel and the cells segregate into the outer trophectoderm and the inner cell mass.' },
+  { from: E.tB, name: 'Blastocyst', text: 'By day 5, the blastocyst consists of the trophectoderm, which gives rise to the placenta, and the inner cell mass, which gives rise to the embryo proper. Embryos at this stage are assessed with the Gardner grading model.' },
 ]
 const MARKS = [['t2', '2'], ['t3', '3'], ['t4', '4'], ['t5', '5'], ['t8', '8'], ['t9+', '9+'], ['tM', 'M'], ['tSB', 'SB'], ['tB', 'B']]
+// Annotation codes follow Ciray et al. (2014); the names appear in tooltips and the next-event label
+const EVENT_NAMES = { t2: '2-cell', t3: '3-cell', t4: '4-cell', t5: '5-cell', t8: '8-cell', 't9+': '≥9-cell', tM: 'morula', tSB: 'blastulation', tB: 'blastocyst' }
 const stageAt = (h) => { let s = 0; STAGES.forEach((st, i) => { if (h >= st.from) s = i }); return s }
 
 // ---------------------------------------------------------------- UI
@@ -254,9 +256,10 @@ const trackMarks = MARKS.map(([k, label]) => {
   $('#track-events').append(s)
   return [k, s]
 })
-const eventItems = MARKS.slice(0, 8).map(([k, label]) => {
+const eventItems = MARKS.slice(0, 8).map(([k]) => {
   const li = document.createElement('li')
-  li.innerHTML = `${label === 'M' ? 'morula' : label === 'SB' ? 'blast.' : label + ' cells'}<b>${E[k].toFixed(1)} h</b>`
+  li.innerHTML = `${k}<b>${E[k].toFixed(1)} h</b>`
+  li.title = `${k}: ${EVENT_NAMES[k]} stage`
   $('#rv-events').append(li)
   return [k, li]
 })
@@ -342,7 +345,7 @@ track.addEventListener('pointermove', (e) => { if (state.dragging) state.h = sta
 track.addEventListener('pointerup', () => { state.dragging = false })
 $('#btn-inside').addEventListener('click', () => {
   state.inside = !state.inside
-  $('#btn-inside span').textContent = state.inside ? 'Close' : 'Look inside'
+  $('#btn-inside span').textContent = state.inside ? 'Hide cross-section' : 'Show cross-section'
   $('#btn-inside i').className = `ti ti-${state.inside ? 'eye-off' : 'eye'}`
   document.querySelector('.real').style.opacity = state.inside ? 0 : 1
 })
@@ -409,8 +412,8 @@ renderer.setAnimationLoop(() => {
   eventItems.forEach(([k, li]) => { if (h >= E[k]) nowKey = k })
   eventItems.forEach(([k, li]) => { li.classList.toggle('done', h >= E[k]); li.classList.toggle('now', k === nowKey && h - E[k] < 6) })
   const next = MARKS.find(([k]) => E[k] > h)
-  $('#st-next').textContent = next ? `${E[next[0]].toFixed(1)} h` : 'done'
-  $('#st-next-label').textContent = next ? `next: ${next[1] === 'M' ? 'morula' : next[1] === 'SB' ? 'blastocyst' : next[1] + ' cells'}` : 'development'
+  $('#st-next').textContent = next ? `${E[next[0]].toFixed(1)} h` : '—'
+  $('#st-next-label').textContent = next ? `next event: ${next[0]} (${EVENT_NAMES[next[0]]} stage)` : 'no further events'
   drawChart(h)
   showFrame(h)
 
@@ -448,7 +451,7 @@ renderer.setAnimationLoop(() => {
   parts.fluid.material.uniforms.uOpacity.value = 0.5 * form
   zona.scale.setScalar(1 + 0.05 * expand)
 
-  // look inside: peel away the near side of the shell (blastocyst only)
+  // cross-section: peel away the near side of the shell (blastocyst only)
   const insideTarget = state.inside && si === STAGES.length - 1 ? 1 : 0
   state.insideAmt += (insideTarget - state.insideAmt) * Math.min(1, dt * 4)
   cut.normal.copy(v3.subVectors(camera.position, controls.target).normalize()).negate()

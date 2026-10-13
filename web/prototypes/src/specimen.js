@@ -187,13 +187,13 @@ composer.addPass(new OutputPass())
 const callouts = new Callouts(document.querySelector('#callouts'), camera)
 callouts.avoid([document.querySelector('.panel-left')], [document.querySelector('.panel-right')])
 callouts.add({ object: embryo, local: anchors.icm, side: -1, slot: 0, className: 'warm',
-  html: '<b>Inner cell mass · A</b><span>becomes the baby</span>' })
+  html: '<b>Inner cell mass · A</b><span>gives rise to the embryo proper</span>' })
 callouts.add({ object: embryo, local: anchors.cavity, side: -1, slot: 2,
   html: '<b>Blastocoel</b><span>fluid-filled cavity</span>' })
 callouts.add({ object: embryo, local: anchors.te, side: 1, slot: 0,
-  html: '<b>Trophectoderm · A</b><span>becomes the placenta</span>' })
+  html: '<b>Trophectoderm · A</b><span>gives rise to the placenta</span>' })
 callouts.add({ object: embryo, local: anchors.zona, side: 1, slot: 2,
-  html: '<b>Zona pellucida</b><span>shell, thinning at grade 4</span>' })
+  html: '<b>Zona pellucida</b><span>thinning at expansion grade 4</span>' })
 
 document.querySelectorAll('#exp-seg i').forEach((el, i) => setTimeout(() => el.classList.toggle('on', i < 4), 900 + i * 140))
 const C = 2 * Math.PI * 50

@@ -63,8 +63,8 @@ def main():
         for name in RUNS
     ]
     contrasts = [
-        ("without gold patients minus size-matched control (the overlap effect)", STRICT, CONTROL),
-        ("size-matched control minus whole pool (the effect of less data)", CONTROL, WHOLE),
+        ("without gold patients minus size-matched control (overlap effect)", STRICT, CONTROL),
+        ("size-matched control minus whole pool (effect of reduced training data)", CONTROL, WHOLE),
     ]
     diffs = [
         [label, *[f"{acc[x][c]['accuracy'] - acc[y][c]['accuracy']:+.3f} ({ci(boots[x][c] - boots[y][c], True)})"
@@ -82,21 +82,24 @@ def main():
         by_patient.append(row)
 
     text = [
-        "# Does patient overlap inflate the grading results?\n",
-        f"The gold test set was drawn by image, not by patient: {int(pool.gold_patient.sum())} of {len(pool):,} "
-        f"training-pool images ({pool.gold_patient.mean():.0%}) come from {pool[pool.gold_patient].patient.nunique()} "
-        "patients who also have a gold test image. Sibling embryos look alike, so a model could score better on "
-        "patients it trained on. Three 5-fold ensembles with identical settings, scored on the 300 gold images "
-        f"(accuracy with 95% patient-bootstrap CI, {a.boot:,} resamples):\n",
+        "# Effect of patient overlap on the grading results\n",
+        f"The gold test set was drawn by image rather than by patient: {int(pool.gold_patient.sum())} of "
+        f"{len(pool):,} training-pool images ({pool.gold_patient.mean():.0%}) come from "
+        f"{pool[pool.gold_patient].patient.nunique()} patients who also contribute a gold test image. Because sibling "
+        "embryos resemble one another, a model could achieve higher accuracy on patients represented in its training "
+        "data. Three five-fold ensembles with identical settings were therefore scored on the 300 gold images "
+        f"(accuracy with 95% patient-level bootstrap confidence intervals, {a.boot:,} resamples):\n",
         md_table(pd.DataFrame(rows, columns=["model", "training images per fold", *COLUMN_NAMES])),
-        "\nPaired differences on the same resamples (95% CI). If overlap inflated the results, the first row "
-        "would be clearly negative:\n",
+        "\nPaired differences were computed on identical resamples (95% CI). If the overlap inflated the results, "
+        "the differences in the first row would be clearly negative:\n",
         md_table(pd.DataFrame(diffs, columns=["comparison", *COLUMN_NAMES])),
-        f"\nAccuracy (expansion / ICM / TE) on gold images from patients with training-pool images "
-        f"({int(seen.sum())} images) and without ({int((~seen).sum())} images):\n",
-        md_table(pd.DataFrame(by_patient, columns=["model", "patient in the pool", "patient not in the pool"])),
-        "\nThe intervals cover which embryos happen to be in the test set, not training randomness: single models "
-        "of the reported run differ by up to 0.04 on expansion from one fold to the next.",
+        "\nAccuracy (expansion / ICM / TE) on gold images from patients represented in the training pool "
+        f"({int(seen.sum())} images) and from patients absent from it ({int((~seen).sum())} images):\n",
+        md_table(
+            pd.DataFrame(by_patient, columns=["model", "patient in the training pool", "patient not in the pool"])
+        ),
+        "\nThe intervals reflect the sampling of embryos in the test set, not the randomness of training; the "
+        "single models of the reported run differ by up to 0.04 in expansion accuracy from one fold to the next.",
     ]
     paths.report("blastocyst", "patient-overlap-check.md").write_text("\n".join(text), encoding="utf-8")
     print("\n".join(text))

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Embryo Scan</title>
+  <title>Embryo Scan · Development</title>
+  <meta name="description" content="Pre-implantation development of a human embryo, illustrated in three dimensions at the division times detected automatically in a held-out time-lapse recording.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,46 +18,46 @@
   <header class="topbar">
     <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
     <nav class="tabs">
-      <a class="active"><i class="ti ti-timeline-event"></i>Develop</a>
-      <a href="/analyze.html"><i class="ti ti-scan"></i>Analyze</a>
-      <a href="/compare.html"><i class="ti ti-arrows-sort"></i>Compare</a>
+      <a class="active"><i class="ti ti-timeline-event"></i>Development</a>
+      <a href="/analyze.html"><i class="ti ti-scan"></i>Grading</a>
+      <a href="/compare.html"><i class="ti ti-arrows-sort"></i>Ranking</a>
     </nav>
     <div class="clock mono"><span id="clock-day">Day 0</span><b id="clock-hours">0.0 h</b></div>
   </header>
 
   <section class="story">
     <div class="day mono" id="st-day">Day 0</div>
-    <h1 id="st-name">Fertilized egg</h1>
+    <h1 id="st-name">Zygote</h1>
     <p id="st-text"></p>
     <div class="stats">
-      <div class="stat"><span class="mono" id="st-cells">1</span><small>cells</small></div>
-      <div class="stat"><span class="mono" id="st-next">27.0 h</span><small id="st-next-label">next division</small></div>
+      <div class="stat"><span class="mono" id="st-cells">1</span><small>cell number</small></div>
+      <div class="stat"><span class="mono" id="st-next">27.0 h</span><small id="st-next-label">next event</small></div>
     </div>
     <div class="grades" id="st-grades">
-      <div class="eyebrow">What the AI grades at this stage</div>
+      <div class="eyebrow">Gardner grading parameters</div>
       <div class="chips">
         <span><i class="ti ti-circle-dashed"></i>Expansion</span>
         <span class="accent"><i class="ti ti-circle-dot"></i>Inner cell mass</span>
         <span><i class="ti ti-circles-relation"></i>Trophectoderm</span>
       </div>
-      <button id="btn-inside" class="primary"><i class="ti ti-eye"></i><span>Look inside</span></button>
+      <button id="btn-inside" class="primary"><i class="ti ti-eye"></i><span>Show cross-section</span></button>
     </div>
   </section>
 
   <aside class="real">
     <div class="real-head">
-      <span class="eyebrow">Real time-lapse</span>
-      <span class="badge mono" id="rv-id">demo timings</span>
+      <span class="eyebrow">Time-lapse recording</span>
+      <span class="badge mono" id="rv-id">reference timings</span>
     </div>
     <div class="frame" id="rv-frame">
-      <video id="rv-video" muted playsinline preload="auto" aria-label="Real time-lapse video of the embryo"></video>
-      <div class="frame-empty" id="rv-empty"><i class="ti ti-video"></i><span>Real video appears here once the division model is trained</span></div>
+      <video id="rv-video" muted playsinline preload="auto" aria-label="Time-lapse recording of the embryo"></video>
+      <div class="frame-empty" id="rv-empty"><i class="ti ti-video"></i><span>The recording is shown here once the phase model has been trained and the demonstration data have been exported.</span></div>
       <span class="frame-time mono" id="rv-time">0.0 h</span>
     </div>
-    <div class="eyebrow mt">Divisions detected by the AI</div>
+    <div class="eyebrow mt">Automatically detected events</div>
     <ol class="events" id="rv-events"></ol>
-    <svg class="chart" id="rv-chart" viewBox="0 0 300 92" preserveAspectRatio="none" aria-label="Cell count over time"></svg>
-    <div class="chart-axis mono"><span>0 h</span><span>cell count</span><span id="rv-axis-end">96 h</span></div>
+    <svg class="chart" id="rv-chart" viewBox="0 0 300 92" preserveAspectRatio="none" aria-label="Cell number over time"></svg>
+    <div class="chart-axis mono"><span>0 h</span><span>cell number (log scale)</span><span id="rv-axis-end">96 h</span></div>
   </aside>
 
   <footer class="timeline">
@@ -68,7 +69,7 @@
       <div class="days mono" id="days"></div>
     </div>
   </footer>
-  <div class="credit mono">Video: Gomez et al. 2022 (CC BY-NC-SA 4.0) · research demo, not for medical use</div>
+  <div class="credit mono">Time-lapse data: Gomez et al. (2022), CC BY-NC-SA 4.0 · For research use only; not for clinical decision-making</div>
 
   <script type="module" src="/src/app/develop.js"></script>
 </body>

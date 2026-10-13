@@ -1,7 +1,7 @@
 """Compare image-based live-birth models with the baselines, using patient-level 5-fold CV on the dev set.
 
-Image inputs come from the grading model: its 11 grade probabilities ("AI grade")
-and its 768-d image embedding compressed with PCA ("AI embedding").
+Image inputs come from the grading model: its 11 grade probabilities ("automated grade")
+and its 768-d image embedding compressed with PCA ("automated image embedding").
 
 Usage: python scripts/blastocyst/run_outcome_models.py [--target lb] [--run grader-convnext-tiny]
 """
@@ -46,11 +46,11 @@ def main():
     models = {
         "age only": (["age"], logistic()),
         "embryologist's grade": (EXPERT_GRADE + ["day5"], logistic()),
-        "AI grade": (AI_GRADE + ["day5"], logistic()),
-        "AI embedding": (emb_cols, embedding_model(E, 0)),
-        "AI grade + clinical": (AI_GRADE + CLINICAL, logistic()),
-        "AI embedding + clinical": (emb_cols + CLINICAL, embedding_model(E, len(CLINICAL))),
-        "AI grade + embryologist's grade + age": (AI_GRADE + EXPERT_GRADE + ["age", "day5"], logistic()),
+        "automated grade": (AI_GRADE + ["day5"], logistic()),
+        "automated image embedding": (emb_cols, embedding_model(E, 0)),
+        "automated grade + clinical": (AI_GRADE + CLINICAL, logistic()),
+        "automated embedding + clinical": (emb_cols + CLINICAL, embedding_model(E, len(CLINICAL))),
+        "automated grade + embryologist's grade + age": (AI_GRADE + EXPERT_GRADE + ["age", "day5"], logistic()),
     }
     oof = pd.DataFrame({"file": dev["file"], "patient": dev["patient"], "fold": dev["fold"], "y": y})
     res = {}
@@ -75,11 +75,21 @@ def main():
     oof.to_csv(out / f"oof-{label}-image-models.csv", index=False)
     (out / f"summary-{label}-image-models.json").write_text(json.dumps(res, indent=2))
     text = [
-        f"# Image models vs baselines: {label.replace('-', ' ')}\n",
-        f"Dev set: {len(dev)} embryos, {dev.patient.nunique()} patients, {int(y.sum())} positives. "
-        "Patient-level 5-fold CV, 95% CIs from a patient-level bootstrap; differences are paired.\n",
+        f"# Image-based models compared with baselines: {label.replace('-', ' ')}\n",
+        f"The development set comprises {len(dev)} embryos from {dev.patient.nunique()} patients, with "
+        f"{int(y.sum())} positive outcomes. Models were evaluated by patient-level five-fold cross-validation, with "
+        "95% confidence intervals from a patient-level bootstrap; differences between models are paired.\n",
         md_table(
-            pd.DataFrame(rows, columns=["model", "AUC (95% CI)", "vs age only", "vs embryologist's grade", "Brier"])
+            pd.DataFrame(
+                rows,
+                columns=[
+                    "model",
+                    "AUC (95% CI)",
+                    "difference vs. age only",
+                    "difference vs. embryologist's grade",
+                    "Brier score",
+                ],
+            )
         ),
     ]
     paths.report("blastocyst", f"outcome-{label}.md").write_text("\n".join(text), encoding="utf-8")

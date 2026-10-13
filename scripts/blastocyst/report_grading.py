@@ -59,9 +59,9 @@ def plot_vs_experts(ens: dict, cis: dict) -> None:
     """Accuracy per criterion: individual embryologists, the best published
     model and the ensemble (with its 95% CI)."""
     groups = [
-        ("individual embryologists (average)", [EXPERTS[c] for c in CRIT], figures.FAINT, figures.INK),
-        ("best published model", [PUBLISHED[c] for c in CRIT], figures.MUTED, "white"),
-        ("Embryo Scan", [ens[c]["accuracy"] for c in CRIT], figures.COBALT, "white"),
+        ("Individual embryologists (mean)", [EXPERTS[c] for c in CRIT], figures.FAINT, figures.INK),
+        ("Best published model (Kromp et al., 2023)", [PUBLISHED[c] for c in CRIT], figures.MUTED, "white"),
+        ("Embryo Scan ensemble", [ens[c]["accuracy"] for c in CRIT], figures.COBALT, "white"),
     ]
     x, width = np.arange(len(CRIT)), 0.27
     fig, ax = plt.subplots(figsize=(8, 4.4))
@@ -73,8 +73,8 @@ def plot_vs_experts(ens: dict, cis: dict) -> None:
     ax.errorbar(x + width, ours, yerr=[ours - ci[0], ci[1] - ours], fmt="none", ecolor=figures.INK, capsize=4, lw=1)
     ax.set_xticks(x, ["Expansion", "Inner cell mass", "Trophectoderm"])
     ax.set_ylim(0, 1)
-    ax.set_ylabel("accuracy against the expert panel")
-    ax.set_title("Grading 300 blastocyst photos against a panel of embryologists")
+    ax.set_ylabel("Accuracy relative to the expert panel")
+    ax.set_title("Gardner grading accuracy on the 300-image consensus test set")
     ax.grid(axis="x", visible=False)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=3)
     figures.save(fig, "blastocyst-grading-vs-experts")
@@ -126,12 +126,17 @@ def main():
 
     plot_vs_experts(ens, cis)
     rows = [
-        ["Individual experts vs panel (paper, mean ± SD)", "0.78 ± 0.12", "0.74 ± 0.06", "0.70 ± 0.14"],
-        ["Best published model (paper)", "0.85 Swin", "0.69 XCeption", "0.62 XCeption/Swin"],
-        ["Paper's XCeption, scored by our code", *[f"{paper_xc[c]['accuracy']:.3f}" for c in CRIT]],
+        [
+            "Individual embryologists vs. panel (Kromp et al., 2023; mean ± SD)",
+            "0.78 ± 0.12",
+            "0.74 ± 0.06",
+            "0.70 ± 0.14",
+        ],
+        ["Best published model (Kromp et al., 2023)", "0.85 (Swin)", "0.69 (Xception)", "0.62 (Xception/Swin)"],
+        ["Published Xception predictions, re-scored with this code", *[f"{paper_xc[c]['accuracy']:.3f}" for c in CRIT]],
         ["Embryo Scan, single models (mean, range)", *[fold_range(c) for c in CRIT]],
         [
-            "**Embryo Scan, 5-model ensemble** (95% CI)",
+            "**Embryo Scan, five-model ensemble** (95% CI)",
             *[f"**{ens[c]['accuracy']:.3f}** ({cis[c][0]:.2f}-{cis[c][1]:.2f})" for c in CRIT],
         ],
     ]
@@ -156,7 +161,7 @@ def main():
         )
 
     adj_rows = []
-    for name, pr, mt in (("argmax (as trained)", final, ens), ("balanced thresholds", adj, ens_adj)):
+    for name, pr, mt in (("argmax", final, ens), ("balanced thresholds", adj, ens_adj)):
         row = [name]
         for k in ("icm", "te"):
             f1m, c_hit, c_n = macro_f1(pr, k)
@@ -165,30 +170,37 @@ def main():
 
     text = [
         "# Grading results\n",
-        "Gold test set: 300 images graded by a panel of embryologists (majority vote). No grading model trained on "
-        "these images. Accuracy is computed exactly like the dataset authors' script: inner cell mass and "
-        "trophectoderm are only scored when neither the model nor the panel puts the embryo at expansion grade 1-2.\n",
-        md_table(pd.DataFrame(rows, columns=["", "Expansion", "Inner cell mass", "Trophectoderm"])),
-        f"\nEnsemble weighted F1: expansion {ens['exp']['f1_w']:.3f}, ICM {ens['icm']['f1_w']:.3f}, "
-        f"TE {ens['te']['f1_w']:.3f}. "
-        f"Expansion quadratic-weighted kappa: {ens['exp']['kappa_quadratic']:.3f}.\n",
-        "The official test set was drawn by image, not by patient, so 30% of training images come from patients who "
-        "also have a test image (same as the paper's setup). Retraining without those patients changes accuracy by "
-        "less than 0.01 against a size-matched control: [patient-overlap-check.md](patient-overlap-check.md).\n",
-        "## Rare grades: balanced decision thresholds\n",
-        "Grade C is rare in training (16 ICM and 47 TE labels out of ~1,700), so the plain model almost never "
-        "predicts it. Adding a per-class bonus to the B and C scores, tuned to maximize balanced accuracy on the "
-        "**out-of-fold training predictions** (the gold set is not used), trades a little overall accuracy for "
-        f"catching rare grades. Bonuses (log-prob, A/B/C): ICM {bias['icm'].round(2).tolist()}, "
-        f"TE {bias['te'].round(2).tolist()}.\n",
+        "The gold test set comprises 300 images graded by a panel of embryologists (majority vote), none of which "
+        "was used to train a grading model. Accuracy is computed exactly as in the dataset authors' scoring script, "
+        "in which the inner cell mass and the trophectoderm are scored only when neither the model nor the panel "
+        "assigns expansion grade 1-2.\n",
+        md_table(pd.DataFrame(rows, columns=["Grader", "Expansion", "Inner cell mass", "Trophectoderm"])),
+        f"\nThe weighted F1 scores of the ensemble are {ens['exp']['f1_w']:.3f} for expansion, "
+        f"{ens['icm']['f1_w']:.3f} for the inner cell mass and {ens['te']['f1_w']:.3f} for the trophectoderm, and "
+        f"the quadratically weighted kappa for expansion is {ens['exp']['kappa_quadratic']:.3f}.\n",
+        "The official test set was drawn by image rather than by patient, so 30% of the training images come from "
+        "patients who also contribute a test image, as in the original benchmark. Retraining without those patients "
+        "changes accuracy by less than 0.01 relative to a size-matched control "
+        "([patient-overlap-check.md](patient-overlap-check.md)).\n",
+        "## Balanced decision thresholds for rare grades\n",
+        "Grade C is rare in the training data (16 inner cell mass and 47 trophectoderm labels among approximately "
+        "1,700 images), and the argmax decision rule therefore seldom predicts it. Adding a class-specific offset to "
+        "the log-probabilities of grades B and C, tuned to maximize balanced accuracy on the **out-of-fold training "
+        "predictions** without use of the gold set, exchanges a small loss of overall accuracy for improved "
+        "detection of rare grades. The offsets (log-probability, grades A/B/C) are "
+        f"ICM {bias['icm'].round(2).tolist()} and TE {bias['te'].round(2).tolist()}.\n",
         md_table(
             pd.DataFrame(
                 adj_rows,
-                columns=["decision rule", "ICM: accuracy / macro F1 / C found", "TE: accuracy / macro F1 / C found"],
+                columns=[
+                    "decision rule",
+                    "ICM: accuracy / macro F1 / grade C detected",
+                    "TE: accuracy / macro F1 / grade C detected",
+                ],
             )
         ),
-        "\n## Where the model and the panel disagree\n",
-        "Expansion grade:\n",
+        "\n## Confusion matrices against the panel\n",
+        "Expansion grade (rows: panel; columns: model):\n",
         confusion(final[COLS], gold, "exp"),
         "\nInner cell mass:\n",
         confusion(final[COLS], gold, "icm"),

@@ -27,24 +27,24 @@ from embryoscan.timelapse.viability import DAY3, DAY5, FEATURES, category_score,
 from embryoscan.timelapse.viability import make_model as make_viability_model
 
 SHORT = {
-    "embryologist's timings": "embryologist's timings",
-    "AI-detected timings (end to end)": "AI-detected timings",
-    "Meseguer 2011 categories": "published rules",
-    "logistic regression on timings": "learned model",
+    "embryologist's annotations": "annotated timings",
+    "phase model, end to end": "detected timings",
+    "Meseguer 2011 categories": "Meseguer categories",
+    "logistic regression on timings": "logistic regression",
 }
 
 
 def plot_roc(curves: list[tuple[str, str, object, object, float]]) -> None:
-    """ROC curve of every ranking: ink for the embryologist's timings, cobalt
-    for the AI's; solid for the learned model, dashed for the published rules."""
+    """ROC curve of every ranking: ink for the annotated timings, cobalt for the
+    detected ones; solid for the logistic regression, dashed for the Meseguer categories."""
     fig, ax = plt.subplots(figsize=(5.6, 5.4))
-    ax.plot([0, 1], [0, 1], color=figures.FAINT, lw=1, ls=":", label="coin flip (AUC 0.50)")
+    ax.plot([0, 1], [0, 1], color=figures.FAINT, lw=1, ls=":", label="chance (AUC 0.50)")
     for timings, method, y, score, auc in curves:
         fpr, tpr, _ = roc_curve(y, score)
         ax.plot(
             fpr,
             tpr,
-            color=figures.COBALT if timings.startswith("AI") else figures.INK,
+            color=figures.COBALT if timings.startswith("phase") else figures.INK,
             ls="-" if method.startswith("logistic") else "--",
             lw=1.8,
             label=f"{SHORT[timings]}, {SHORT[method]} (AUC {auc:.3f})",
@@ -52,9 +52,9 @@ def plot_roc(curves: list[tuple[str, str, object, object, float]]) -> None:
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_aspect("equal")
-    ax.set_xlabel("stalled embryos ranked as viable (false positive rate)")
-    ax.set_ylabel("blastocysts ranked as viable (true positive rate)")
-    ax.set_title("Ranking embryos from day 0-3 division timings")
+    ax.set_xlabel("False positive rate")
+    ax.set_ylabel("True positive rate")
+    ax.set_title("Blastocyst formation from day 0-3 division timings")
     ax.legend(loc="lower right", fontsize=8.5)
     figures.save(fig, "timelapse-viability-roc")
 
@@ -85,7 +85,7 @@ def main():
 
     y = test.blastocyst.to_numpy()
     res, rows, curves = {}, [], []
-    for name, frame in (("embryologist's timings", test), ("AI-detected timings (end to end)", ai)):
+    for name, frame in (("embryologist's annotations", test), ("phase model, end to end", ai)):
         for method, score in (
             ("Meseguer 2011 categories", category_score(frame["category"])),
             ("logistic regression on timings", lr.predict_proba(frame[FEATURES].to_numpy(float))[:, 1]),
@@ -106,12 +106,13 @@ def main():
     (run / "viability-summary.json").write_text(json.dumps(res, indent=2))
     text = [
         "# Viability ranking from day 0-3 division timings\n",
-        f"Outcome: blastocyst formed by day 5 ({DAY5:.0f} h). Videos recorded at least that long: "
-        f"{len(tab)} ({tab.blastocyst.mean():.0%} formed a blastocyst). Logistic regression trained on "
-        f"{len(train)} train/val videos; tested on {len(test)} videos from held-out patients "
-        f"({int(y.sum())} blastocysts). AUC with 95% patient-bootstrap CI.\n",
+        f"The outcome is blastocyst formation by day 5 ({DAY5:.0f} h). Of the {len(tab)} videos recorded for at "
+        f"least that long, {tab.blastocyst.mean():.0%} formed a blastocyst. The logistic regression was trained on "
+        f"{len(train)} training and validation videos and evaluated on {len(test)} videos from held-out patients, "
+        f"{int(y.sum())} of which formed a blastocyst. AUCs are reported with 95% patient-level bootstrap "
+        "confidence intervals.\n",
         md_table(pd.DataFrame(rows, columns=["timings from", "ranking method", "AUC (95% CI)"])),
-        "\nBlastocyst rate by Meseguer category (embryologist's timings, test videos):\n",
+        "\nBlastocyst formation rate by Meseguer category (annotated timings, test videos):\n",
         md_table(by_cat, "{:.2f}"),
     ]
     paths.report("timelapse", "viability.md").write_text("\n".join(text), encoding="utf-8")

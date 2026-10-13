@@ -75,16 +75,16 @@ export function cellsAt(levels, t) {
 }
 
 export const STAGES = [
-  { t: 0.0, day: 'Day 0', name: 'Fertilized egg', cells: '1 cell',
-    text: 'One cell carrying two sets of DNA, one from each parent. The two round spots inside are those sets, about to merge.' },
-  { t: 1.0, day: 'Day 1', name: 'First division', cells: '2 cells',
-    text: "The cell splits in two without growing. Every division halves the size of the cells, so the embryo stays the same size." },
-  { t: 1.6, day: 'Day 2', name: 'Four cells', cells: '4 cells',
-    text: 'Embryologists check that the cells divide on time and come out roughly equal in size.' },
-  { t: 2.3, day: 'Day 3', name: 'Eight cells', cells: '8 cells',
-    text: 'Eight cells. Around now the embryo switches on its own genes instead of running on the egg\'s supplies.' },
+  { t: 0.0, day: 'Day 0', name: 'Zygote', cells: '1 cell',
+    text: 'The zygote is the fertilized oocyte, in which the maternal and paternal pronuclei are visible as two round structures before they fade at the onset of the first cleavage division.' },
+  { t: 1.0, day: 'Day 1', name: '2-cell stage', cells: '2 cells',
+    text: 'The first cleavage division divides the zygote into two blastomeres. Because cleavage divisions proceed without cell growth, the volume of each blastomere approximately halves while the overall size of the embryo remains constant.' },
+  { t: 1.6, day: 'Day 2', name: '4-cell stage', cells: '4 cells',
+    text: 'Embryologists assess whether the divisions occur at the expected times and whether the blastomeres are of approximately equal size.' },
+  { t: 2.3, day: 'Day 3', name: '8-cell stage', cells: '8 cells',
+    text: 'The major wave of embryonic genome activation takes place around this stage, after which development depends on transcription of the embryonic genome rather than on maternally inherited transcripts.' },
   { t: 3.4, day: 'Day 4', name: 'Morula', cells: '16-32 cells',
-    text: 'The cells pull tightly together into a solid ball. Morula is Latin for mulberry.' },
+    text: 'During compaction, the blastomeres adhere tightly to one another and form a solid mass; the term morula derives from the Latin word for mulberry.' },
   { t: 4.6, day: 'Day 5', name: 'Blastocyst', cells: '~120 cells',
-    text: 'A fluid-filled ball with two kinds of cells: the outer layer becomes the placenta, the inner cluster becomes the baby. This is the stage Embryo Scan grades.' },
+    text: 'The blastocyst contains a fluid-filled cavity and two cell populations: the trophectoderm, which gives rise to the placenta, and the inner cell mass, which gives rise to the embryo proper. Embryos at this stage are assessed with the Gardner grading model.' },
 ]

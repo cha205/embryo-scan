@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Embryo Scan · Compare</title>
+  <title>Embryo Scan · Ranking</title>
+  <meta name="description" content="Ranking of sibling embryos from one held-out patient by the estimated probability of blastocyst formation, computed from automatically detected day 0-3 division times.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,22 +18,22 @@
   <header class="topbar">
     <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
     <nav class="tabs">
-      <a href="/"><i class="ti ti-timeline-event"></i>Develop</a>
-      <a href="/analyze.html"><i class="ti ti-scan"></i>Analyze</a>
-      <a class="active"><i class="ti ti-arrows-sort"></i>Compare</a>
+      <a href="/"><i class="ti ti-timeline-event"></i>Development</a>
+      <a href="/analyze.html"><i class="ti ti-scan"></i>Grading</a>
+      <a class="active"><i class="ti ti-arrows-sort"></i>Ranking</a>
     </nav>
-    <div class="clock mono"><span>Day 3</span><b>Rank</b></div>
+    <div class="clock mono"><span>Assessment</span><b>Day 3</b></div>
   </header>
 
   <section class="intro">
     <div class="day mono" id="c-patient">Patient</div>
-    <h1>Which embryo to transfer?</h1>
-    <p>The AI watched each embryo's first three days, timed every division, and estimated its chance of becoming a blastocyst by day 5. Taller plinth, better chance.</p>
-    <button id="btn-reveal" class="primary"><i class="ti ti-eye"></i><span>Show what happened by day 5</span></button>
+    <h1>Viability ranking</h1>
+    <p>Sibling embryos are ranked by the estimated probability of blastocyst formation by day 5 (116 h), which is computed from the division times detected automatically in the first 72 h of each time-lapse recording. The height of each plinth is proportional to the estimated probability.</p>
+    <button id="btn-reveal" class="primary"><i class="ti ti-eye"></i><span>Reveal day-5 outcome</span></button>
     <p class="fine" id="c-note"></p>
   </section>
 
-  <div class="credit mono">Held-out patient · frames: Gomez et al. 2022 (CC BY-NC-SA 4.0) · research demo, not for medical use</div>
+  <div class="credit mono">Held-out test patient · Time-lapse data: Gomez et al. (2022), CC BY-NC-SA 4.0 · For research use only; not for clinical decision-making</div>
   <script type="module" src="/src/app/compare.js"></script>
 </body>
 </html>

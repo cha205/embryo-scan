@@ -72,15 +72,17 @@ def main():
 
     names = {"lb": "live birth", "ha": "ongoing pregnancy with heartbeat", "ss": "positive pregnancy test"}
     text = [
-        f"# Baselines: {names[a.target]}\n",
-        f"Dev set: {len(dev)} embryos from {dev.patient.nunique()} patients, {int(y.sum())} positives "
-        f"({y.mean():.0%}). Patient-level 5-fold cross-validation; 95% CIs from a patient-level bootstrap. "
-        "Logistic regression unless noted.\n",
-        md_table(pd.DataFrame(rows, columns=["model", "AUC (95% CI)", "AUC vs age only", "Brier"])),
-        f"\nAMH sensitivity (ambiguous dates read as the low vs high value): clinical-model AUC "
-        f"{sens['lo']:.3f} vs {sens['hi']:.3f}.\n",
-        "AUC 0.5 = coin flip. Brier = mean squared error of the predicted probability (lower is better; "
-        f"always predicting the base rate scores {y.mean() * (1 - y.mean()):.3f}).",
+        f"# Baseline models: {names[a.target]}\n",
+        f"The development set comprises {len(dev)} embryos from {dev.patient.nunique()} patients, with "
+        f"{int(y.sum())} positive outcomes ({y.mean():.0%}). Models were evaluated by patient-level five-fold "
+        "cross-validation, with 95% confidence intervals from a patient-level bootstrap, and are logistic "
+        "regressions unless stated otherwise.\n",
+        md_table(pd.DataFrame(rows, columns=["model", "AUC (95% CI)", "AUC difference vs. age only", "Brier score"])),
+        "\nIn a sensitivity analysis in which ambiguous AMH values were read as the lower or the higher candidate "
+        f"value, the AUC of the clinical model was {sens['lo']:.3f} and {sens['hi']:.3f}, respectively.\n",
+        "An AUC of 0.5 corresponds to chance-level discrimination. The Brier score is the mean squared error of the "
+        "predicted probability (lower is better); a constant prediction of the base rate scores "
+        f"{y.mean() * (1 - y.mean()):.3f}.",
     ]
     paths.report("blastocyst", f"baselines-{label}.md").write_text("\n".join(text), encoding="utf-8")
     print("\n".join(text))

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Embryo Scan · Analyze</title>
+  <title>Embryo Scan · Grading</title>
+  <meta name="description" content="Gardner grading of day-5 human blastocysts by a five-model ConvNeXt-Tiny ensemble, with Grad-CAM attribution maps.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,34 +18,34 @@
   <header class="topbar">
     <div class="brand"><span class="mark"><i class="ti ti-microscope"></i></span>Embryo Scan</div>
     <nav class="tabs">
-      <a href="/"><i class="ti ti-timeline-event"></i>Develop</a>
-      <a class="active"><i class="ti ti-scan"></i>Analyze</a>
-      <a href="/compare.html"><i class="ti ti-arrows-sort"></i>Compare</a>
+      <a href="/"><i class="ti ti-timeline-event"></i>Development</a>
+      <a class="active"><i class="ti ti-scan"></i>Grading</a>
+      <a href="/compare.html"><i class="ti ti-arrows-sort"></i>Ranking</a>
     </nav>
-    <div class="clock mono"><span>Day 5</span><b>Grade</b></div>
+    <div class="clock mono"><span>Assessment</span><b>Day 5</b></div>
   </header>
 
   <aside class="picker">
-    <div class="eyebrow">Day-5 embryos</div>
-    <p class="hint">Photos from the expert-panel test set. No model trained on them.</p>
+    <div class="eyebrow">Test-set blastocysts</div>
+    <p class="hint">These images belong to the consensus-graded test set of Kromp et al. (2023) and were not used to train any model.</p>
     <ul id="samples"></ul>
 
-    <div class="eyebrow mt">Your photo</div>
+    <div class="eyebrow mt">Image upload</div>
     <label class="upload" id="upload" tabindex="0">
       <input type="file" accept="image/png,image/jpeg" hidden>
       <span class="ico"><i class="ti ti-upload"></i></span>
-      <div><b id="upload-title">Grade a photo</b><span id="upload-sub">PNG or JPG, or drop it here</span></div>
+      <div><b id="upload-title">Grade an image</b><span id="upload-sub">PNG or JPEG, ≤10&nbsp;MB</span></div>
     </label>
     <ul id="uploads"></ul>
-    <p class="hint" id="upload-note">Graded by the local server and never stored. The model learned from one clinic's microscope, so photos from other setups may grade poorly.</p>
+    <p class="hint" id="upload-note">Uploaded images are processed in memory and are not stored. Because the model was trained on images from a single clinic and microscope, its performance on other imaging systems has not been validated.</p>
   </aside>
 
   <aside class="result">
-    <div class="eyebrow">AI grade</div>
-    <div class="grade-row"><b class="mono" id="r-grade">4AA</b><span class="vs">panel <b class="mono" id="r-panel">4AA</b></span></div>
+    <div class="eyebrow">Model grade (Gardner)</div>
+    <div class="grade-row"><b class="mono" id="r-grade">4AA</b><span class="vs">expert panel <b class="mono" id="r-panel">4AA</b></span></div>
     <p class="grade-explain" id="r-explain"></p>
     <div class="heads" id="r-heads"></div>
-    <div class="eyebrow mt">Where the AI looked</div>
+    <div class="eyebrow mt">Grad-CAM attribution</div>
     <div class="seg" id="r-seg">
       <button data-head="icm" class="on">Inner cell mass</button>
       <button data-head="exp">Expansion</button>
@@ -53,7 +54,7 @@
     <div class="legend"><span>low</span><i></i><span>high</span></div>
   </aside>
 
-  <div class="credit mono">Photos: Kromp et al. 2023 (CC BY 4.0) · heat map: Grad-CAM · research demo, not for medical use</div>
+  <div class="credit mono">Images: Kromp et al. (2023), CC BY 4.0 · Attribution: Grad-CAM (Selvaraju et al., 2017) · For research use only; not for clinical decision-making</div>
   <script type="module" src="/src/app/analyze.js"></script>
 </body>
 </html>

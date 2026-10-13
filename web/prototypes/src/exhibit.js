@@ -134,10 +134,10 @@ const { anchors, parts } = blast.userData
 
 // --- labels for "look inside" ------------------------------------------------------
 const callouts = new Callouts(document.querySelector('#callouts'), camera)
-callouts.add({ object: blast, local: anchors.icm, side: 1, slot: 0, className: 'accent', html: 'Inner cell mass<span>becomes the baby</span>' })
-callouts.add({ object: blast, local: anchors.te, side: 1, slot: 1, html: 'Trophectoderm<span>becomes the placenta</span>' })
+callouts.add({ object: blast, local: anchors.icm, side: 1, slot: 0, className: 'accent', html: 'Inner cell mass<span>gives rise to the embryo proper</span>' })
+callouts.add({ object: blast, local: anchors.te, side: 1, slot: 1, html: 'Trophectoderm<span>gives rise to the placenta</span>' })
 callouts.add({ object: blast, local: anchors.cavity, side: 1, slot: 2, html: 'Blastocoel<span>fluid-filled cavity</span>' })
-callouts.add({ object: zona, local: anchors.zona, side: 1, slot: 3, html: 'Zona pellucida<span>protective shell</span>' })
+callouts.add({ object: zona, local: anchors.zona, side: 1, slot: 3, html: 'Zona pellucida<span>glycoprotein shell</span>' })
 
 // --- timeline UI ------------------------------------------------------------------
 const MAX_T = 5
@@ -181,7 +181,7 @@ track.addEventListener('pointermove', (e) => { if (state.dragging) state.t = sta
 track.addEventListener('pointerup', () => { state.dragging = false })
 insideBtn.addEventListener('click', () => {
   state.inside = !state.inside
-  insideBtn.querySelector('span').textContent = state.inside ? 'Close' : 'Look inside'
+  insideBtn.querySelector('span').textContent = state.inside ? 'Hide cross-section' : 'Show cross-section'
   insideBtn.querySelector('i').className = `ti ti-${state.inside ? 'eye-off' : 'eye'}`
 })
 

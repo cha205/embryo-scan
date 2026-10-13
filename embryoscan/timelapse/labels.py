@@ -17,9 +17,9 @@ from .. import paths
 
 PHASES = ["tPB2", "tPNa", "tPNf", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9+", "tM", "tSB", "tB", "tEB", "tHB"]
 P = {p: i for i, p in enumerate(PHASES)}
-PHASE_NAMES = ["polar body", "pronuclei appear", "pronuclei fade", "2 cells", "3 cells", "4 cells", "5 cells",
-               "6 cells", "7 cells", "8 cells", "9+ cells", "morula", "blastulation starts", "blastocyst",
-               "expanded blastocyst", "hatching"]  # fmt: skip
+PHASE_NAMES = ["second polar body", "pronuclear appearance", "pronuclear fading", "2-cell", "3-cell", "4-cell",
+               "5-cell", "6-cell", "7-cell", "8-cell", "≥9-cell", "morula", "start of blastulation",
+               "full blastocyst", "expanded blastocyst", "hatching blastocyst"]  # fmt: skip
 DIVISIONS = ["t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9+", "tM", "tSB", "tB", "tEB"]  # onsets scored for timing
 
 

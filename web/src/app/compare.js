@@ -1,6 +1,6 @@
 // Compare tab: one held-out patient's embryos on plinths. Each specimen is that
 // embryo at day 3, rebuilt from the divisions detected in its video, and the
-// plinth height is its predicted chance of becoming a blastocyst.
+// plinth height is its estimated probability of becoming a blastocyst.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
@@ -15,13 +15,13 @@ const data = await fetch('/timelapse/demo.json').then((r) => (r.ok ? r.json() : 
 const cmp = data?.compare
 const $ = (s) => document.querySelector(s)
 if (!cmp) {
-  $('#c-patient').textContent = 'No comparison data yet'
-  $('#c-note').textContent = 'Run scripts/timelapse/export_demo.py after training the stage model.'
+  $('#c-patient').textContent = 'Comparison data unavailable'
+  $('#c-note').textContent = 'Run scripts/timelapse/export_demo.py after training the phase model.'
   throw new Error('no compare data')
 }
 const embryos = cmp.embryos
 $('#c-patient').textContent = `Patient ${cmp.patient} · ${embryos.length} embryos`
-$('#c-note').textContent = 'Scores come from day 0-3 timings only. Day-5 frames stay hidden until you reveal them.'
+$('#c-note').textContent = 'The estimates use only events observed up to 72 h, and the day-5 frames and outcomes remain hidden until they are revealed.'
 
 const canvas = $('#scene')
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
@@ -71,7 +71,7 @@ const accentMat = new THREE.MeshBasicMaterial({ color: '#2f5bff' })
 const SPACING = 1.75
 const specimens = embryos.map((e, i) => {
   const x = (i - (embryos.length - 1) / 2) * SPACING
-  const h = 0.2 + e.score * 2.0 // height is proportional to the predicted chance
+  const h = 0.2 + e.score * 2.0 // height is proportional to the estimated probability
   const g = new THREE.Group()
   g.position.set(x, 0, -Math.abs(i - (embryos.length - 1) / 2) * 0.35)
   const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.66, h, 96), plinthMat)
@@ -81,7 +81,7 @@ const specimens = embryos.map((e, i) => {
   ring.position.y = h
   g.add(plinth, ring)
 
-  // the embryo at day 3, from the AI-detected division times
+  // the embryo at day 3, from the automatically detected division times
   const ev = Object.fromEntries(Object.entries(e.events_ai).map(([k, v]) => [k, v ?? 999]))
   const twin = buildTwin(ev, 11 + i)
   const spec = new THREE.Group()
@@ -105,11 +105,11 @@ const specimens = embryos.map((e, i) => {
   const tag = document.createElement('div')
   tag.className = `tag${i === 0 ? ' first' : ''}`
   const times = ['t2', 't3', 't4', 't5', 't8'].map((k) => `${k} ${e.events_ai[k] == null ? 'not reached' : e.events_ai[k].toFixed(1) + ' h'}`).join(', ')
-  tag.title = `AI-detected divisions: ${times}. Meseguer category ${e.category}.`
+  tag.title = `Detected division times: ${times}; the corresponding Meseguer category is ${e.category}.`
   tag.innerHTML = `<span class="rank">#${i + 1}</span>
     <div class="thumb"><img src="${e.thumbs.day3 ?? ''}" alt="Day 3 frame"><img class="d5" src="${e.thumbs.day5 ?? ''}" alt="Day 5 frame"><span class="lbl">day 3</span></div>
-    <div class="score"><b>${Math.round(e.score * 100)}%</b><small>chance</small></div>
-    <div class="outcome ${e.blastocyst ? 'yes' : 'no'}">${e.blastocyst ? 'Blastocyst' : 'Stalled'}</div>`
+    <div class="score"><b>${Math.round(e.score * 100)}%</b><small>probability</small></div>
+    <div class="outcome ${e.blastocyst ? 'yes' : 'no'}">${e.blastocyst ? 'Blastocyst' : 'No blastocyst'}</div>`
   $('#tags').append(tag)
   return { group: g, spec, inst, blast, tag, top: new THREE.Vector3(0, h + 1.3, 0), formed: !!e.blastocyst }
 })
@@ -119,7 +119,7 @@ $('#btn-reveal').addEventListener('click', () => {
   revealed = !revealed
   document.body.classList.toggle('revealed', revealed)
   document.querySelectorAll('.tag .lbl').forEach((s) => { s.textContent = revealed ? 'day 5' : 'day 3' })
-  $('#btn-reveal span').textContent = revealed ? 'Back to day 3' : 'Show what happened by day 5'
+  $('#btn-reveal span').textContent = revealed ? 'Return to day 3' : 'Reveal day-5 outcome'
   specimens.forEach((s) => {
     s.blast.visible = revealed && s.formed
     s.inst.visible = !(revealed && s.formed)

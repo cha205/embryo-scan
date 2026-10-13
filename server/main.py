@@ -65,12 +65,14 @@ def api_grade(file: Annotated[UploadFile, File()]):
     and a Grad-CAM heat map per head, aligned with that photo."""
     data = file.file.read(MAX_BYTES + 1)
     if len(data) > MAX_BYTES:
-        raise HTTPException(413, "That image is larger than 10 MB.")
+        raise HTTPException(413, "The file exceeds the 10 MB size limit.")
     try:
         img = Image.open(io.BytesIO(data))
         img.load()
     except (UnidentifiedImageError, OSError):
-        raise HTTPException(400, "That file isn't an image we can read. Try a PNG or JPG.") from None
+        raise HTTPException(
+            400, "The file could not be decoded as an image; supported formats are PNG and JPEG."
+        ) from None
     models = state["models"]
     x = load_image(img)
     with grading:

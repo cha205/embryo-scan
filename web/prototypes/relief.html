@@ -14,14 +14,14 @@
   <div id="labels" class="labels"></div>
 
   <header class="topbar">
-    <div class="brand"><i class="ti ti-microscope"></i><span>Embryo Scan</span><em>AI attention</em></div>
+    <div class="brand"><i class="ti ti-microscope"></i><span>Embryo Scan</span><em>Model attribution</em></div>
     <div class="seg" id="heads">
       <button data-head="icm" class="on">Inner cell mass</button>
       <button data-head="exp">Expansion</button>
       <button data-head="te">Trophectoderm</button>
     </div>
     <div class="legend">
-      <span class="mono">Model attention</span>
+      <span class="mono">Grad-CAM attribution</span>
       <div class="ramp"></div>
       <div class="ends mono"><span>low</span><span>high</span></div>
     </div>
@@ -31,16 +31,16 @@
     <button class="back" id="btn-back"><i class="ti ti-arrow-left"></i>All embryos</button>
     <img id="in-img" alt="Microscope photo of the selected embryo">
     <div class="in-title"><span id="in-name">Embryo A</span><span class="mono" id="in-prob">41%</span></div>
-    <div class="in-sub">chance of live birth <span class="mono dim">(demo value)</span></div>
+    <div class="in-sub">live-birth probability <span class="mono dim">(placeholder value; not a model output)</span></div>
     <div class="grades">
       <div><span class="dim">Model grade</span><b class="mono" id="in-model">4AA</b></div>
       <div><span class="dim">Expert panel</span><b class="mono" id="in-expert">4AA</b></div>
     </div>
     <div id="in-bars" class="bars"></div>
-    <label class="height">Terrain height<input type="range" id="height" min="0" max="1" step="0.01" value="0.6"></label>
+    <label class="height">Relief height<input type="range" id="height" min="0" max="1" step="0.01" value="0.6"></label>
   </aside>
 
-  <footer class="hint mono"><i class="ti ti-hand-click"></i>Click an embryo to inspect · drag to orbit · real images from Kromp et al. 2023 (CC BY 4.0)</footer>
+  <footer class="hint mono"><i class="ti ti-hand-click"></i>Select an embryo to inspect it, and drag to rotate the scene. Images: Kromp et al. (2023), CC BY 4.0.</footer>
 
   <script type="module" src="./src/relief.js"></script>
 </body>

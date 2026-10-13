@@ -65,17 +65,25 @@ def evaluate(model, df: pd.DataFrame, run, split: str) -> dict:
         "category_videos": int(len(both)),
     }
     (run / f"metrics-{split}.json").write_text(json.dumps(res, indent=2))
+    columns = {
+        "phase": "event",
+        "median_abs": "median absolute error (h)",
+        "within_1h": "within 1 h",
+        "within_2h": "within 2 h",
+    }
     text = [
-        f"# Division timing: {split} videos\n",
-        f"{res['videos']} videos from patients the model never saw, {res['frames']:,} labelled frames.\n",
-        f"- Frame-by-frame phase accuracy: {res['frame_acc_raw']:.3f} raw, **{res['frame_acc_decoded']:.3f}** after "
-        f"the never-go-backwards decoding ({res['frame_within_one_phase']:.3f} within one phase).",
-        f"- Median timing error across all divisions: **{res['median_abs_error_h']:.2f} h** "
-        "(frames are ~0.25 h apart).",
-        f"- Meseguer 2011 category (A+ ... D-) from detected vs annotated timings: same category for "
-        f"{res['category_agreement']:.0%} of {res['category_videos']} videos.\n",
-        "Timing error per phase (detected onset minus the embryologist's):\n",
-        md_table(per_phase.reset_index(), "{:.2f}"),
+        f"# Division timing: {split} partition\n",
+        f"The evaluation comprises {res['videos']} videos from patients who were not used for training, with "
+        f"{res['frames']:,} annotated frames.\n",
+        f"- Frame-level phase accuracy is {res['frame_acc_raw']:.3f} before decoding and "
+        f"**{res['frame_acc_decoded']:.3f}** after monotonic decoding; {res['frame_within_one_phase']:.3f} of "
+        "frames are assigned to the annotated phase or an adjacent one.",
+        f"- The median absolute onset error across all divisions is **{res['median_abs_error_h']:.2f} h**, for a "
+        "frame interval of approximately 0.25 h.",
+        "- The Meseguer et al. (2011) category (A+ to D-) derived from the detected timings agrees with the category "
+        f"derived from the annotations in {res['category_agreement']:.0%} of {res['category_videos']} videos.\n",
+        "Timing error per event (detected onset minus annotated onset, in hours):\n",
+        md_table(per_phase.reset_index().rename(columns=columns), "{:.2f}"),
     ]
     paths.report("timelapse", f"divisions-{split}.md").write_text("\n".join(text), encoding="utf-8")
     print("\n".join(text))
