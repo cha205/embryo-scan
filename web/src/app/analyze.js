@@ -223,7 +223,7 @@ const NOTE = note.textContent
 const OFFLINE = API
   ? 'The grading service is currently unavailable; please try again later.'
   : 'Grading uploaded images requires the local inference server (uvicorn server.main:app --port 8000); please start the server and reload the page.'
-const WAKE_TRIES = 24 // ~5 s apart: a sleeping Space takes about a minute to start
+const WAKE_TRIES = 24 // ~5 s apart: an idle grading service needs time to start and load the models
 let views = 8
 let uploads = 0
 

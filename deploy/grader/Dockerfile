@@ -1,5 +1,5 @@
-# Hugging Face Space serving the photo grader on a free CPU. It builds from the
-# public GitHub repo and downloads the trained weights from a Hugging Face model
+# Container for the photo grader, deployed to Google Cloud Run. It builds from the
+# public GitHub repo and downloads the trained weights from the Hugging Face model
 # repo (see deploy/README.md).
 FROM python:3.12-slim
 
@@ -11,7 +11,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Spaces run as user 1000
+# Run as an unprivileged user
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user PATH=/home/user/.local/bin:$PATH
